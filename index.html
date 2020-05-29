@@ -8,11 +8,106 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   </head>
   <body>
-    <header class="header">
+    <header>
+      <div class="wrapper">
+        <div class="controls">
+          <div class="controls_base">
+            <button data-btn="background" class="controls_background-btn">
+              <img src="./src/img/refresh_icon.svg" alt="new background">
+            </button>
+            <select id='js-language' class="controls_language">
+              <option>EN</option>
+              <option>RU</option>
+              <option>BE</option>
+            </select>
+            <button  id="js-unitBtn" class="controls_unit-btn" unit="">
+              <span data-btn="unitF" class="controls_unit-f">F</span>
+              <span data-btn="unitC" class="controls_unit-c">C</span>
+            </button>
+          </div>
+          <div class="controls_helpers">
+            <button id="js-voiceBtn" data-btn="voice" class="controls_voice">
+              <img src="./src/img/headset-tool.svg" alt="listen">
+            </button>
+            <button id="js-commandBtn" data-btn="micro" class="controls_micro">
+              <img src="./src/img/radio-mic.svg" alt="command">
+            </button>
+          </div>
+          <div class="controls_search">
+            <form autocomplete="off">
+              <input id="js-searchInp" type="text" placeholder="Lorem ipsum...">
+              <input id="js-searchBtn" data-btn="search" type="button" value="Lorem">
+            </form>
+          </div>
+        </div>
+      </div>
     </header>
-    <main class="main">
+    <main>
+      <div class="wrapper">
+        <section class="weather">
+          <div id="js-place" class="weather_place"></div>
+          <div id="js-date" class="weather_date"></div>
+          <div class="weather_now now">
+            <div id="js-temperature" class="now_temperature"></div>
+            <div class="now_climate">
+              <img src="" alt="" id="js-iconNow" class="now_icon" height="100px" width="150px">
+              <div class="now_climate-field">
+                <span id="js-sky" class="now_param"></span>
+              </div>
+              <div class="now_climate-field">
+                <span class="now_param">feels like:</span>
+                <span id="js-feels" class="now_param"></span>
+              </div>
+              <div class="now_climate-field">
+                <span class="now_param">wind:</span>
+                <span id="js-wind" class="now_param"></span>
+              </div>
+              <div class="now_climate-field">
+                <span class="now_param">humidity:</span>
+                <span id="js-humidity" class="now_param"></span>
+              </div>
+            </div>
+          </div>
+          <div class="weather_future future">
+            <div class="future_day">
+              <div id="js-titleNext1" class="future_title"></div>
+              <div class="future_weather">
+                <span id="js-temperatureNext1" class="future_temperature"></span>
+                <img src="" alt="" id="js-iconNext1" class="future_icon" height="100px" width="50px">
+              </div>
+            </div>
+            <div class="future_day">
+              <div id="js-titleNext1" class="future_title"></div>
+              <div class="future_weather">
+                <span id="js-temperatureNext1" class="future_temperature"></span>
+                <img src="" alt="" id="js-iconNext1" class="future_icon" height="100px" width="50px">
+              </div>
+            </div>
+            <div class="future_day">
+              <div id="js-titleNext1" class="future_title"></div>
+              <div class="future_weather">
+                <span id="js-temperatureNext1" class="future_temperature"></span>
+                <img src="" alt="" id="js-iconNext1" class="future_icon" height="100px" width="50px">
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="geo">
+          <div id="js-map" class="geo_map">
+
+          </div>
+          <div class="geo_coordinate">
+            <div class="geo_latitude">
+              <span class="geo_param">Latitude:</span>
+              <span id="js-latitude" class="geo_param"></span>
+            </div>
+            <div class="geo_latitude">
+              <span class="geo_param">Longitude:</span>
+              <span id="js-longitude" class="geo_param"></span>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
-    <footer class="footer">
-    </footer>
   </body>
 </html>
