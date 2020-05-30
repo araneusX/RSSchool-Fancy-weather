@@ -31,7 +31,7 @@ const optimization = (function () {
 module.exports = {
   context: path.resolve(__dirname, 'src/script'),
   mode: 'development',
-  entry: './index.js',
+  entry: './index.ts',
   output: {
     filename: filename('index.js'),
     path: path.resolve(__dirname, 'dist'),
@@ -83,19 +83,30 @@ module.exports = {
           'sass-loader',
         ],
       },
+      // {
+      //   test: /\.js$/,
+      //   exclude: /node_modules/,
+      //   use: {
+      //     loader: 'babel-loader',
+      //     options: {
+      //       presets: ['@babel/preset-env'],
+      //       plugins: ['@babel/plugin-transform-runtime'],
+      //     },
+      //   },
+      // },
       {
-        test: /\.js$/,
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env'],
-            plugins: ['@babel/plugin-transform-runtime'],
-          },
-        },
+      },
+      {
+        test: /\.png$/,
+        use: ['file-loader'],
       },
     ],
   },
-
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"]
+  },
   optimization,
 };
