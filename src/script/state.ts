@@ -8,11 +8,11 @@ export interface State{
   command: boolean,
   search: {
     value: string,
-    suggestions: Array<{
+    suggestions: {
       name: string,
       lat: number,
       lon: number,
-    }>,
+    }[],
   },
   place: string,
   lat: number,
@@ -27,10 +27,10 @@ export interface State{
   humidity: number,
   now: Date,
   period: 0|1,
-  nextDays: Array<{
+  nextDays: {
     temperature: number,
     icon: number,
-  }>
+  }[]
 };
 
 const state: State = {
@@ -40,7 +40,7 @@ const state: State = {
   voice: false,
   command: true,
   search: {
-    value: 'Hi!',
+    value: '',
     suggestions: [],
   },
   place: 'Minsk, Belarus',

@@ -4,16 +4,16 @@ import { loadImage } from './getData';
 import L from '../leaflet/leaflet';
 
 class View{
-  languageNode = <HTMLSelectElement>document.getElementById('js-language');
+  languageNode = document.getElementById('js-language') as HTMLSelectElement;
   unitBtn = document.getElementById('js-unitBtn');
   voiceBtn = document.getElementById('js-voiceBtn');
   commandBtn = document.getElementById('js-commandBtn');
-  searchInp = <HTMLInputElement>document.getElementById('js-searchInp');
+  searchInp = document.getElementById('js-searchInp') as HTMLInputElement;
   searchBtn = document.getElementById('js-searchBtn');
   placeNode = document.getElementById('js-place');
   dateNode = document.getElementById('js-date');
   temperatureNode = document.getElementById('js-temperature');
-  iconNowNode = <HTMLImageElement>document.getElementById('js-iconNow');
+  iconNowNode = document.getElementById('js-iconNow') as HTMLImageElement;
   conditionNowNode = document.getElementById('js-condition');
   feelsNode = document.getElementById('js-feels');
   windNode = document.getElementById('js-wind');
@@ -25,19 +25,17 @@ class View{
     {
       nameNode: document.getElementById(`js-title${i}`),
       temperature: document.getElementById(`js-temperature${i}`),
-      icon: <HTMLImageElement>document.getElementById(`js-icon${i}`),
+      icon: document.getElementById(`js-icon${i}`) as HTMLImageElement,
     }
   ));
   mapNode = document.getElementById('js-map');
-  
-  map: Object; 
+
+  map: any;
   currentState: State;
 
   async init(initialState: State): Promise<void> {
     this.currentState = initialState;
 
-    document.body.style['background-image'] = `url(${await loadImage(this.currentState.backgroundURL)})`;
-    //this.map.setView({lon: this.currentState.lon, lat: this.currentState.lat},
     this.map = L.map(this.mapNode, {
       center: [this.currentState.lat, this.currentState.lon],
       zoom: 9,
@@ -48,6 +46,7 @@ class View{
       keyboard: false,
       scrollWheelZoom: false
     });
+    
     L.tileLayer(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.currentState.language}`, {
         maxZoom: 19,
         attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
@@ -60,7 +59,7 @@ class View{
     if (this.currentState.voice) {
       this.voiceBtn.classList.add('active');
     }
-    
+
     if (this.currentState.command) {
       this.commandBtn.classList.add('active');
     }
@@ -69,7 +68,11 @@ class View{
       this.searchInp.value = this.currentState.search.value;
       this.searchInp.focus();
     }
-    
+
+    if (this.currentState.backgroundURL !== '') {
+      document.body.style['background-image'] = `url(${await loadImage(this.currentState.backgroundURL)})`;
+    }
+
     this.placeNode.append(this.currentState.place);
     this.dateNode.append(`${this.currentState.now}`.slice(0, 25));
     this.latitudeNode.append(`${this.currentState.lat}`);
@@ -88,7 +91,18 @@ class View{
     });
   }
 
-  render(newState: State): void {
+  async render(newState: State): Promise<void> {
+    if (this.currentState.backgroundURL !== newState.backgroundURL) {
+      this.currentState.backgroundURL = newState.backgroundURL;
+      document.body.style['background-image'] = `url(${await loadImage(this.currentState.backgroundURL)})`;
+    }
+
+    if (this.currentState.lon !== newState.lon || this.currentState.lat !==newState.lat) {
+      this.currentState.lon = newState.lon;
+      this.currentState.lat = newState.lat;
+      this.map.setView({lon: this.currentState.lon, lat: this.currentState.lat});
+    }
+
     if (this.currentState.unit !== newState.unit) {
       this.currentState.unit = newState.unit;
       this.unitBtn.dataset.unit = this.currentState.unit;
@@ -151,7 +165,7 @@ class View{
       replaceInnerHTML(this.conditionNowNode, this.currentState.condition.text);
       this.iconNowNode.src = getIconPath(this.currentState.period, this.currentState.condition.icon);
     }
-    
+
     if (this.currentState.temperatureNow !== newState.temperatureNow) {
       this.currentState.temperatureNow = newState.temperatureNow;
       replaceInnerHTML(this.temperatureNode, `${this.currentState.temperatureNow}`)
@@ -166,7 +180,7 @@ class View{
       this.currentState.wind = newState.wind;
       replaceInnerHTML(this.windNode, `${this.currentState.wind}`)
     }
-    
+
     if (this.currentState.humidity !== newState.humidity) {
       this.currentState.humidity = newState.humidity;
       replaceInnerHTML(this.humidityNode, `${this.currentState.humidity}`)
