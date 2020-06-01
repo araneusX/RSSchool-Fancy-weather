@@ -2,11 +2,12 @@ import { loadImage } from './getData';
 
 export interface State{
   backgroundURL: string,
+  backgroundImg?: any,
   language: string,
   unit: string,
   voice: boolean,
   command: boolean,
-  search: {
+  search?: {
     value: string,
     suggestions: {
       name: string,
@@ -14,7 +15,10 @@ export interface State{
       lon: number,
     }[],
   },
-  place: string,
+  city: {
+    name: string,
+    formatted: string,
+  },
   lat: number,
   lon: number,
   condition: {
@@ -39,11 +43,10 @@ const state: State = {
   unit: 'c',
   voice: false,
   command: true,
-  search: {
-    value: '',
-    suggestions: [],
+  city: {
+    name: 'Minsk',
+    formatted: 'Belarus, Best City!'
   },
-  place: 'Minsk, Belarus',
   lat: 53.902334,
   lon: 27.5618791,
   condition: {

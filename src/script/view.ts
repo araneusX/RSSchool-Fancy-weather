@@ -11,6 +11,7 @@ class View{
   searchInp = document.getElementById('js-searchInp') as HTMLInputElement;
   searchBtn = document.getElementById('js-searchBtn');
   placeNode = document.getElementById('js-place');
+  describeNode = document.getElementById('js-describe');
   dateNode = document.getElementById('js-date');
   temperatureNode = document.getElementById('js-temperature');
   iconNowNode = document.getElementById('js-iconNow') as HTMLImageElement;
@@ -33,8 +34,8 @@ class View{
   map: any;
   currentState: State;
 
-  async init(initialState: State): Promise<void> {
-    this.currentState = initialState;
+  constructor(initialState: State) {
+    this.currentState = Object.assign({}, initialState);
 
     this.map = L.map(this.mapNode, {
       center: [this.currentState.lat, this.currentState.lon],
@@ -46,7 +47,7 @@ class View{
       keyboard: false,
       scrollWheelZoom: false
     });
-    
+
     L.tileLayer(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.currentState.language}`, {
         maxZoom: 19,
         attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
@@ -64,16 +65,12 @@ class View{
       this.commandBtn.classList.add('active');
     }
 
-    if (this.currentState.search.value.length > 0) {
-      this.searchInp.value = this.currentState.search.value;
-      this.searchInp.focus();
+    if (this.currentState.backgroundImg) {
+      document.body.style['background-image'] = `url(${this.currentState.backgroundImg})`;
     }
 
-    if (this.currentState.backgroundURL !== '') {
-      document.body.style['background-image'] = `url(${await loadImage(this.currentState.backgroundURL)})`;
-    }
-
-    this.placeNode.append(this.currentState.place);
+    this.placeNode.append(this.currentState.city.name);
+    this.describeNode.append(this.currentState.city.formatted);
     this.dateNode.append(`${this.currentState.now}`.slice(0, 25));
     this.latitudeNode.append(`${this.currentState.lat}`);
     this.longitudeNode.append(`${this.currentState.lon}`);
@@ -91,10 +88,10 @@ class View{
     });
   }
 
-  async render(newState: State): Promise<void> {
-    if (this.currentState.backgroundURL !== newState.backgroundURL) {
-      this.currentState.backgroundURL = newState.backgroundURL;
-      document.body.style['background-image'] = `url(${await loadImage(this.currentState.backgroundURL)})`;
+  render(newState: State): void {
+    if (this.currentState.backgroundImg !== newState.backgroundImg) {
+      this.currentState.backgroundImg = newState.backgroundImg;
+      document.body.style['background-image'] = `url(${this.currentState.backgroundImg})`;
     }
 
     if (this.currentState.lon !== newState.lon || this.currentState.lat !==newState.lat) {
@@ -137,17 +134,12 @@ class View{
       }
     }
 
-    if (this.currentState.search.value.length > 0) {
-      if (this.currentState.search.value !== newState.search.value) {
-        this.currentState.search.value = newState.search.value;
-        this.searchInp.value = this.currentState.search.value;
-      }
-      this.searchInp.focus();
-    }
-
-    if (this.currentState.place !== newState.place) {
-      this.currentState.place = newState.place;
-      replaceInnerHTML(this.placeNode, this.currentState.place);
+    if (this.currentState.city.name !== newState.city.name
+      || this.currentState.city.formatted !== newState.city.formatted) {
+      this.currentState.city.name = newState.city.name;
+      this.currentState.city.formatted = newState.city.formatted;
+      replaceInnerHTML(this.placeNode, this.currentState.city.name);
+      replaceInnerHTML(this.describeNode, this.currentState.city.formatted);
     }
 
     if (this.currentState.lat !== newState.lat) {

@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,400;0,600;0,800;0,900;1,900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;0,900;1,400;1,600&display=swap');
 html {
   font-family: 'Montserrat', sans-serif;
   font-size: 16px;
@@ -47,58 +46,6 @@ body {
   }
 }
 
-.messages {
-  &_screen {
-    top: 0;
-    left: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: fixed;
-    width: 100%;
-    min-height: 100vh;
-    background-color: rgba(128, 128, 128, 0.13);
-    z-index: 999;
-
-
-    &.hide {
-      display: none;
-    }
-  }
-
-  &_window {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 20px;
-    background-color: rgba(255, 255, 255, 0.829);
-    padding: 20px;
-    box-shadow: 0 0 3px 0 black;
-  
-    @media (max-width: 767px) {
-      padding: 10px;
-    }
-  }
-
-  &_alert {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  &_controls {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-  }
-
-  &_button {
-    margin: 5px;
-  }
-}
-
 .controls {
 
   &_wrapper {
@@ -128,6 +75,7 @@ body {
 
   &_search {
     justify-content: flex-end;
+    position: relative;
 
     @media (max-width: 767px) {
       margin: 10px;

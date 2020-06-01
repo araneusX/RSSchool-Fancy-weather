@@ -9,11 +9,7 @@
     <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
   </head>
   <body>
-    <section class="messages">
-      <div id="js-messages" class="messages_screen hide">
-        <div id="js-message-body" class="messages_window"></div>
-      </div>
-    </section>
+    <section id="js-messages" class="messages"></section>
     <section class="controls">
         <div class="wrapper controls_wrapper">
           <div class="controls_base">
@@ -38,7 +34,7 @@
               <img src="./src/img/radio-mic.svg" alt="command">
             </button>
           </div>
-          <form autocomplete="off" class="controls_search">
+          <form id="js-searchForm" autocomplete="off" class="controls_search">
             <input id="js-searchInp" class="controls_search-inp" type="text" placeholder="Lorem ipsum...">
             <input id="js-searchBtn" class="controls_search-btn" data-btn="search" type="submit" value="Lorem">
           </form>
@@ -47,6 +43,7 @@
     <section class="title">
       <div class="wrapper title_wrapper">
           <div id="js-place" class="title_place"></div>
+          <div id="js-describe" class="title_describe"></div>
           <div id="js-date" class="title_date"></div>
       </div>
     </section>

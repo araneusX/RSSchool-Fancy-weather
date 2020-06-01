@@ -2,7 +2,7 @@ import handleError from './error';
 import { ipgeolocation, opencagedataByCoord, opencagedataByName } from './apiResponses';
 import { IPGEOLOCATION_KEY, OPENCAGEDATA_KEY } from './keys';
 import { status, UserLocation } from './types';
-import { confirmLocation } from './messages';
+import { extractCity } from './utils';
 
 export async function loadImage(url: string): Promise<string> {
   const res = await fetch(url);
@@ -24,15 +24,21 @@ export async function getCityListByName(name: string, lang: string):
       }
       const locationsObj = await data.json();
       result.status = 'ok';
-      result.list = locationsObj.results.map((i) => (
-        {
-          status: 'ok',
-          city: i.formatted,
-          lon: i.geometry.lng,
-          lat: i.geometry.lat,
-          lang
-        }
-      ));
+
+      result.list = locationsObj.results
+        .filter((item) => item.components._category === 'place'
+            && (!item.components.neighbourhood
+                || item.components.neighbourhood.toLowerCase() !== name.toLowerCase()))
+        .slice(0, 10)
+        .map((i) => (
+          {
+            status: 'ok',
+            city: extractCity(i),
+            lon: i.geometry.lng,
+            lat: i.geometry.lat,
+            lang
+          }
+        ));
 
     } catch (error) {
       console.error(error);
@@ -43,7 +49,7 @@ export async function getCityListByName(name: string, lang: string):
 
 export async function getCityByCoord(lat: number, lon: number, lang?: string):
   Promise<UserLocation> {
-  const result = {} as UserLocation;
+  const result = new UserLocation();
 
   try {
     let data: any;
@@ -62,8 +68,8 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
     if (locationObj.status.code === 200) {
       result.status = 'ok';
       const results = locationObj.results;
-      const cityObj = results.reduce((acc, i) => acc.confidence < i.confidence ? i : acc);
-      result.city = cityObj.formatted;
+
+      result.city = extractCity(results[0]);
       result.lang = lang;
       result.lat = lat;
       result.lon = lon;
@@ -77,7 +83,7 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
 }
 
 export async function detectLocationByIp(): Promise<UserLocation> {
-  const result = {} as UserLocation;
+  const result = new UserLocation();
   let locationObj = {} as any;
 
   try {
@@ -90,7 +96,7 @@ export async function detectLocationByIp(): Promise<UserLocation> {
     result.lang = locationObj.languages.includes('ru') ? 'ru' : 'en';
     result.lat = Number(locationObj.latitude);
     result.lon = Number(locationObj.longitude);
-    result.city = locationObj.city;
+    result.city.name = locationObj.city;
     result.status = 'ok';
   } catch (error) {
     console.error(error);
@@ -101,7 +107,7 @@ export async function detectLocationByIp(): Promise<UserLocation> {
 }
 
 export async function  detectLocationByGeolocation(): Promise<UserLocation> {
-  const result = {} as UserLocation;
+  const result = new UserLocation();
 
   function getCurrentPosition(options = {}) {
     return new Promise((resolve, reject) => {
@@ -140,8 +146,6 @@ export async function getLocation(): Promise<UserLocation> {
       result = userCity;
     }
   }
-
-  result = await confirmLocation(result);
 
   return result;
 }

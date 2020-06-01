@@ -1,5 +1,12 @@
 export type status = 'ok' | 'error';
-export interface UserLocation {
-  status: status, lon: number, lat: number, lang: string, city?: string,
+export class UserLocation {
+  status: status;
+  lon: number;
+  lat: number;
+  lang: string;
+  city?: {
+    name: string;
+    formatted: string;
+  }
 };
 
