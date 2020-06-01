@@ -17,6 +17,7 @@ export class RequestLocation extends Message {
     this.form.append(this.input);
     this.controls.append(this.noBtn, this.yesBtn);
     this.form.classList.add('message_form');
+    this.input.classList.add('message_input');
   }
 
   async getUserLocation (): Promise<UserLocation> {

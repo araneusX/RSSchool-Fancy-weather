@@ -39,7 +39,9 @@ export async function getCityListByName(name: string, lang: string):
             lang
           }
         ));
-
+        if (result.list.length === 0) {
+          result.status = 'error';
+        }
     } catch (error) {
       console.error(error);
       result.status = 'error';

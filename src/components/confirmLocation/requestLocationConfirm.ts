@@ -12,8 +12,12 @@ export class RequestLocationConfirm extends Message {
 
   constructor() {
     super();
-    this.messageBody.append(this.title, this.city);
+    this.messageBody.append(this.title, this.city, this.describe);
     this.controls.append(this.noBtn, this.yesBtn);
+    this.title.classList.add('message_title');
+    this.city.classList.add('message_city');
+    this.describe.classList.add('message_describe');
+
   }
 
   async askConfirm (location: UserLocation): Promise<boolean> {

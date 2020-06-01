@@ -77,9 +77,6 @@ export async function getUserSearch(
                 }
                 wrapper.classList.add('open');
               })
-              input.removeEventListener('input', handleChange);
-              input.value = result.city.name;
-              input.addEventListener('input', handleChange);
             } else {
               result = resultList.list[0];
               formElement.dispatchEvent(new Event('submit'));
@@ -93,6 +90,7 @@ export async function getUserSearch(
       result.status = 'error';
       isResult = false;
       itemNodeList = [];
+      wrapper.classList.remove('open');
     }
   }
 

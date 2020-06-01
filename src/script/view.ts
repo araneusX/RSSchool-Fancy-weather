@@ -40,7 +40,7 @@ class View{
     this.map = L.map(this.mapNode, {
       center: [this.currentState.lat, this.currentState.lon],
       zoom: 9,
-      zoomControl: false,
+      // zoomControl: false,
       boxZoom: false,
       doubleClickZoom: false,
       dragging: false,
