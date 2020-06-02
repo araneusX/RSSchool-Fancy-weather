@@ -110,8 +110,8 @@ export function extractCity(apiObj: any) : {name:string, formatted: string} {
   let formatted: string = apiObj.formatted;
   const fields = apiObj.components;
 
-  if (fields.hamlet || apiObj.town || fields.village || fields.suburb || fields.locality) {
-    name = fields.hamlet || apiObj.town || fields.village || fields.suburb || fields.locality;
+  if (fields.hamlet || fields.town || fields.village || fields.suburb || fields.locality) {
+    name = fields.hamlet || fields.town || fields.village || fields.suburb || fields.locality;
   }
 
   if (name.length > 1) {
@@ -131,6 +131,42 @@ export function extractCity(apiObj: any) : {name:string, formatted: string} {
     formatted = split.join(', ');
   }
 
-  name = name.replace(/[\d\s]/g, '');
+  name = name.replace(/\d/g, '');
   return {name, formatted};
+}
+
+
+export function copyObject<T>(source: T): T {
+  return JSON.parse(JSON.stringify(source));
+}
+
+export function formatGeo(coordinate: number): string {
+  const grad: number = Math.floor(coordinate);
+  const min: number = Math.floor((coordinate - grad) * 60);
+  return `${grad}\u00B0 ${min}'`;
+}
+
+export function shuffleArr(arr: Array<any>): Array<any> {
+  const shuffledArr = Array.from(arr);
+  let j: number; 
+  let temp: any;
+  for (let i = shuffledArr.length - 1; i > 0; i -= 1) {
+    j = Math.floor(Math.random() * (i + 1));
+    temp = shuffledArr[j];
+    shuffledArr[j] = shuffledArr[i];
+    shuffledArr[i] = temp;
+  }
+  return shuffledArr;
+}
+
+export async function createBackground(src: string): Promise<HTMLImageElement> {
+  const backgroundImg = document.createElement('img') as HTMLImageElement;
+  backgroundImg.classList.add('background');
+  const imageLoading = () => new Promise((resolve, reject) => {
+    backgroundImg.src = src;
+    backgroundImg.addEventListener('load', () => resolve(), {once: true});
+    backgroundImg.addEventListener('error', () => reject(), {once: true});
+  });
+  await imageLoading();
+  return backgroundImg;
 }

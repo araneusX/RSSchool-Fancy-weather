@@ -11,7 +11,7 @@ html {
 }
 
 body {
-  background-size: cover;
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -26,6 +26,34 @@ body {
     padding: 15vh 0;
   }
 
+}
+
+.background {
+  z-index: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s;
+  
+  &.visible {
+    transition: opacity 0.3s;
+    opacity: 1;
+  }
+}
+
+.start-screen {
+  z-index: 950;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgb(187, 187, 187);
+  transition: opacity 0.3s;
 }
 
 .wrapper {
@@ -48,6 +76,7 @@ body {
 }
 
 .controls {
+  z-index: 1;
 
   &_wrapper {
     align-items: center;
@@ -134,6 +163,7 @@ body {
 }
 
 .title {
+  z-index: 1;
   &_wrapper {
     display: flex;
     flex-direction: column;
@@ -154,6 +184,7 @@ body {
 }
 
 .content {
+  z-index: 1;
   &_wrapper {
     display: flex;
     justify-content: space-around;
@@ -293,6 +324,18 @@ body {
       width: 285px;
     }
   }
+
+  &_param {
+    &__title {
+      &::after {
+        content: ':';
+      }
+    }
+  }
+}
+
+.messages {
+  z-index: 999;
 }
 
 #myPath {
@@ -315,7 +358,7 @@ body {
 
 [data-unit="c"] {
   .controls_unit-c {
-    background-color: green;
+    background-color: #FAFEF8;
   }
 }
 

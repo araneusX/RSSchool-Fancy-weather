@@ -1,14 +1,60 @@
 import handleError from './error';
-import { ipgeolocation, opencagedataByCoord, opencagedataByName } from './apiResponses';
-import { IPGEOLOCATION_KEY, OPENCAGEDATA_KEY } from './keys';
+import { ipgeolocation, opencagedataByCoord, opencagedataByName, flickrByTags } from './apiResponses';
+import { IPGEOLOCATION_KEY, OPENCAGEDATA_KEY, FLICKR_KEY } from './keys';
 import { status, UserLocation } from './types';
-import { extractCity } from './utils';
+import { extractCity, shuffleArr } from './utils';
 
 export async function loadImage(url: string): Promise<string> {
   const res = await fetch(url);
   const blob = await res.blob();
   const base64Image = URL.createObjectURL(blob);
   return base64Image;
+}
+
+export const imagesLinks = {
+  index: 0,
+  isList: false,
+  store: [] as String[],
+
+  async generate (season: string, time: string): Promise<void> {
+    this.index = 0;
+    let data = await fetch(flickrByTags(FLICKR_KEY, season, time));
+    if (data.ok) {
+      let output = await data.json();
+      let photos = output.photos.photo.filter((photo) => photo.url_h);
+      if (photos.length > 0) {
+        this.store = shuffleArr(photos.map((photo) => photo.url_h));
+      }
+    }
+    if (this.store.length === 0) {
+      this.store[0] = `/src/img/${season}/${time}.jpg`;
+    }
+    this.isList = true;
+  },
+
+  getLink(): { status: status, value: string } {
+    if (!this.isList) {
+      throw new Error('list not generated')
+    }
+    let result = {
+      status: 'error' as status,
+      value: this.store[0],
+    }
+    console.log(this.store);
+    
+    if (this.store.length > 1) {
+      result = {
+        value: this.store[this.index],
+        status: 'ok',
+      }
+      if (this.index < this.store.length) {
+        this.index += 1;
+      } else {
+        this.index = 0;
+      }
+    }
+    return result;
+  }
 }
 
 export async function getCityListByName(name: string, lang: string):
@@ -69,18 +115,29 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
 
     if (locationObj.status.code === 200) {
       result.status = 'ok';
-      const results = locationObj.results;
-
-      result.city = extractCity(results[0]);
+      const place = locationObj.results[0].components;
+      if (place._type === 'place') {
+        result.city = extractCity(place);
+      } else {
+        result.city = {
+          name: place.hamlet || place.town || place.village 
+             || place.suburb || place.locality|| place.city,
+          formatted: place.state 
+          ? `${place.state}, ${place.country}`
+          : `${place.country}`,
+        }
+      }
       result.lang = lang;
       result.lat = lat;
       result.lon = lon;
+      console.log(locationObj);
     }
   } catch (error) {
     console.error(error);
     result.status = 'error';
   }
-
+  
+  
   return result;
 }
 
@@ -98,7 +155,10 @@ export async function detectLocationByIp(): Promise<UserLocation> {
     result.lang = locationObj.languages.includes('ru') ? 'ru' : 'en';
     result.lat = Number(locationObj.latitude);
     result.lon = Number(locationObj.longitude);
-    result.city.name = locationObj.city;
+    result.city = {
+      name: locationObj.city,
+      formatted: locationObj.country_name,
+    }
     result.status = 'ok';
   } catch (error) {
     console.error(error);

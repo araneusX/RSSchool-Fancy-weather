@@ -9,11 +9,10 @@
     <link href='https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css' rel='stylesheet' />
   </head>
   <body>
-    <section id="js-messages" class="messages"></section>
     <section class="controls">
         <div class="wrapper controls_wrapper">
           <div class="controls_base">
-            <button data-btn="background" class="controls_background-btn">
+            <button id="js-backgrBtn" data-btn="background" class="controls_background-btn">
               <img src="./src/img/refresh_icon.svg" alt="new background">
             </button>
             <select id='js-language' class="controls_language">
@@ -101,11 +100,11 @@
           <div class="geo_wrapper">
             <div class="geo_coordinate">
               <div class="geo_latitude">
-                <span class="geo_param">Latitude:</span>
+                <span id="js-latitudeTitle" class="geo_param geo_param__title">Latitude:</span>
                 <span id="js-latitude" class="geo_param"></span>
               </div>
               <div class="geo_latitude">
-                <span class="geo_param">Longitude:</span>
+                <span id="js-longitudeTitle" class="geo_param geo_param__title">Longitude:</span>
                 <span id="js-longitude" class="geo_param"></span>
               </div>
             </div>
@@ -122,6 +121,8 @@
         </div>
       </div>
     </section>
+    <div id="js-start-screen" class="start-screen"></div>
+    <section id="js-messages" class="messages"></section>
   </body>
 </html>
 

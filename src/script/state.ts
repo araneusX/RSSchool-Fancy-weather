@@ -1,48 +1,106 @@
-import { loadImage } from './getData';
-
+import { copyObject } from './utils';
 export interface State{
   backgroundURL: string,
-  backgroundImg?: any,
   language: string,
-  unit: string,
+  unit: 'c' | 'f',
   voice: boolean,
   command: boolean,
-  search?: {
-    value: string,
-    suggestions: {
-      name: string,
-      lat: number,
-      lon: number,
-    }[],
-  },
+  now: Date,
+  error: string,
   city: {
     name: string,
     formatted: string,
   },
   lat: number,
   lon: number,
+  temperatureNow: number,
   condition: {
     icon: number,
     text: string,
   }
-  temperatureNow: number,
   feels: number,
   wind: number,
   humidity: number,
-  now: Date,
   period: 0|1,
   nextDays: {
     temperature: number,
     icon: number,
-  }[]
+  }[],
 };
 
+type actionLocation = {
+  type: 'SET_LOCATION',
+  value: {
+    lat: number,
+    lon: number,
+    city: {
+      name: string,
+      formatted: string;
+    },
+  }
+}
+
+type actionLanguage = {
+  type: 'SET_LANGUAGE',
+  value: string,
+}
+
+type actionCommand = {
+  type: 'SET_COMMAND',
+  value: boolean,
+}
+
+type actionVoice = {
+  type: 'SET_VOICE',
+  value: boolean,
+}
+
+type actionUnit = {
+  type: 'SET_UNIT',
+  value: 'c' | 'f',
+}
+
+type actionNow = {
+  type: 'SET_NOW',
+  value: Date,
+}
+
+type actionError = {
+  type: 'SET_ERROR',
+  value: string,
+}
+
+type actionBackground = {
+  type: 'SET_BACKGROUND',
+  value: string,
+}
+
+type actionWeather = {
+  type: 'SET_WEATHER',
+  value: {
+    temperatureNow: number,
+    condition: {
+      icon: number,
+      text: string,
+    }
+    feels: number,
+    wind: number,
+    humidity: number,
+    period: 0|1,
+    nextDays: {
+      temperature: number,
+      icon: number,
+    }[],
+  }
+}
+
 const state: State = {
-  backgroundURL: '../img/backgr.jpeg',
+  backgroundURL: 'https://images.unsplash.com/photo-1542202858-f881811262f7?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max&ixid=eyJhcHBfaWQiOjEwMTM5NX0',
   language: 'be',
   unit: 'c',
   voice: false,
   command: true,
+  error: '',
   city: {
     name: 'Minsk',
     formatted: 'Belarus, Best City!'
@@ -75,10 +133,62 @@ const state: State = {
   ]
 };
 
-// export function dispatch(action: {type: string, value: any}) {
-//   switch (action.type) {
-//     case 'SET_BACKGROUND':  state.backgroundURL = value;
-//   }
-// }
+type myAction = actionLocation | actionLanguage | actionCommand | actionBackground
+| actionVoice | actionUnit | actionNow | actionWeather | actionError;
+
+const stateBackup: State[] = [];
+let stateIndex: number = -1;
+
+export function setState(action: myAction):void {
+  stateBackup.push(copyObject(state));
+  stateIndex += 1;
+  
+  if (stateBackup.length > 10) {
+    stateBackup.shift();
+    stateIndex -+ 1;
+  }
+  switch (action.type) {
+    case 'SET_LOCATION': {
+      const { value } = action;
+      state.lon = value.lon;
+      state.lat = value.lat;
+      state.city = copyObject(value.city);
+      break;
+    };
+    case 'SET_COMMAND': {
+      const { value } = action;
+      break;
+    };
+    case 'SET_LANGUAGE': {
+      const { value } = action;
+      state.language = value;
+      break;
+    };
+    case 'SET_NOW': {
+      const { value } = action;
+      break;
+    };
+    case 'SET_UNIT': {
+      const { value } = action;
+      break;
+    };
+    case 'SET_WEATHER': {
+      const { value } = action;
+      break;
+    };
+    case 'SET_ERROR': {
+      const { value } = action;
+      state.error = value;
+      break;
+    };
+    case 'SET_BACKGROUND': {
+      const { value } = action;
+      state.backgroundURL = value;
+    }
+  }
+  console.log(state);
+  
+}
 
 export default state;
+

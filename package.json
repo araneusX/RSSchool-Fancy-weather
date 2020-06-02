@@ -42,7 +42,6 @@
     "@babel/preset-typescript": "^7.10.1",
     "@types/jest": "^25.2.3",
     "copy-webpack-plugin": "^5.1.1",
-    "mapbox-gl": "^1.10.1",
     "normalize.css": "^8.0.1",
     "swiper": "^5.3.8",
     "ts-loader": "^7.0.5",
