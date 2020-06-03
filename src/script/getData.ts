@@ -1,15 +1,15 @@
 import {
   ipgeolocation, opencagedataByCoord,
-  opencagedataByName, flickrByTags
+  opencagedataByName, flickrByTags, weatherapiNow, weatherapiForecast
 } from './apiResponses';
-import { IPGEOLOCATION_KEY, OPENCAGEDATA_KEY, FLICKR_KEY } from './keys';
-import { status, UserLocation } from './types';
+import { IPGEOLOCATION_KEY, OPENCAGEDATA_KEY, FLICKR_KEY, WEATHERAPI_KEY } from './keys';
+import { status, UserLocation, Weather } from './types';
 import { extractCity, shuffleArr } from './utils';
 
 export const imagesLinks = {
   index: 0,
   isList: false,
-  store: [] as String[],
+  store: [] as string[],
   cash: {
     season: '',
     time: '',
@@ -18,12 +18,13 @@ export const imagesLinks = {
   async generate(season: string, time: string): Promise<void> {
     if (!(this.cash.season === season && this.cash.time === time)) {
       this.cash = { season, time },
+      // tslint:disable-next-line:no-console
       console.log(`Show images by request: ${season}, ${time}`);
       this.index = 0;
-      let data = await fetch(flickrByTags(FLICKR_KEY, season, time));
+      const data = await fetch(flickrByTags(FLICKR_KEY, season, time));
       if (data.ok) {
-        let output = await data.json();
-        let photos = output.photos.photo.filter((photo) => photo.url_h);
+        const output = await data.json();
+        const photos = output.photos.photo.filter((photo) => photo.url_h);
         if (photos.length > 0) {
           this.store = shuffleArr(photos.map((photo) => photo.url_h));
         }
@@ -43,7 +44,7 @@ export const imagesLinks = {
       status: 'error' as status,
       value: this.store[0],
     }
-    
+
     if (this.store.length > 1) {
       result = {
         value: this.store[this.index],
@@ -113,14 +114,14 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
     } else {
       data = await fetch(opencagedataByCoord(OPENCAGEDATA_KEY, lat, lon));
     }
-    
+
     if (!data.ok) {
       throw new Error();
     }
 
     const locationObj = await data.json();
     console.log(locationObj);
-    
+
     if (locationObj.status.code === 200) {
       result.status = 'ok';
       const place = locationObj.results[0].components;
@@ -128,15 +129,15 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
         result.city = extractCity(place);
       } else {
         result.city = {
-          name: place.hamlet || place.town || place.village 
+          name: place.hamlet || place.town || place.village
              || place.locality|| place.city,
-          formatted: place.state 
+          formatted: place.state
           ? `${place.state}, ${place.country}`
           : `${place.country}`,
         }
       }
       console.log(locationObj);
-      
+
       result.DMS = {
         lon: locationObj.results[0].annotations.DMS.lng,
         lat: locationObj.results[0].annotations.DMS.lat,
@@ -150,8 +151,8 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
     console.error(error);
     result.status = 'error';
   }
-  
-  
+
+
   return result;
 }
 
@@ -224,4 +225,59 @@ export async function getLocation(): Promise<UserLocation> {
   }
 
   return result;
+}
+
+export async function getWeather(lat: number, lon: number): Promise<{
+  status: status,
+  value: Weather
+}> {
+  let resultStatus: status;
+  let resultValue: Weather;
+  let forecastObj;
+
+  try {
+    const forecastData = await fetch(weatherapiForecast(WEATHERAPI_KEY, lat, lon, 4));
+    if (!forecastData.ok) {
+      throw new Error();
+    };
+    forecastObj = await forecastData.json();
+    console.log(forecastObj);
+
+    resultStatus = 'ok';
+    resultValue = {
+      temperatureNow: {
+        c: forecastObj.current.temp_c,
+        f: forecastObj.current.temp_f,
+      },
+      feels: {
+        c: forecastObj.current.feelslike_c,
+        f: forecastObj.current.feelslike_f,
+      },
+      condition: forecastObj.current.condition.code,
+      wind: forecastObj.current.wind_kph,
+      humidity: forecastObj.current.humidity,
+      isDay: forecastObj.current.is_day,
+      nextDays: forecastObj.forecast.forecastday
+        .map((day) => ({
+          temperature: {
+            min: {
+              c: day.day.mintemp_c,
+              f: day.day.mintemp_f
+            },
+            max: {
+              c: day.day.maxtemp_c,
+              f: day.day.maxtemp_f
+            }
+          },
+          condition: day.day.condition.code,
+        })),
+    };
+  } catch (error) {
+    console.error(error);
+    resultStatus = 'error';
+  }
+  return {
+    status: resultStatus,
+    value: resultValue,
+  }
 }

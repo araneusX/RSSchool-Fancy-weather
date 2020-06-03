@@ -1,121 +1,13 @@
 import { copyObject } from './utils';
-export interface State{
-  ready: boolean;
-  backgroundURL: string,
-  language: string,
-  unit: 'c' | 'f',
-  voice: boolean,
-  command: boolean,
-  now: number,
-  error: string,
-  city: {
-    name: string,
-    formatted: string,
-  },
-  lat: number,
-  lon: number,
-  latStr: string,
-  lonStr: string,
-  timeOffsetSec: number,
-  temperatureNow: number,
-  condition: {
-    icon: number,
-    text: string,
-  }
-  feels: number,
-  wind: number,
-  humidity: number,
-  period: string,
-  season: string,
-  nextDays: {
-    temperature: number,
-    icon: number,
-  }[],
-};
+import { State, actionLocation, actionLanguage, actionCommand, actionBackground, actionVoice, actionUnit, actionNow, actionWeather, actionError, actionReady } from './types';
 
-type actionLocation = {
-  type: 'SET_LOCATION',
-  value: {
-    lat: number,
-    lon: number,
-    city: {
-      name: string,
-      formatted: string;
-    },
-    latStr: string;
-    lonStr: string;
-    timeOffsetSec: number;
-  }
-}
-
-type actionLanguage = {
-  type: 'SET_LANGUAGE',
-  value: string,
-}
-
-type actionCommand = {
-  type: 'SET_COMMAND',
-  value: boolean,
-}
-
-type actionVoice = {
-  type: 'SET_VOICE',
-  value: boolean,
-}
-
-type actionUnit = {
-  type: 'SET_UNIT',
-  value: 'c' | 'f',
-}
-
-type actionNow = {
-  type: 'SET_NOW',
-  value: {
-    now: number,
-    period: string,
-    season: string,
-  },
-}
-
-type actionError = {
-  type: 'SET_ERROR',
-  value: string,
-}
-
-type actionReady = {
-  type: 'SET_READY',
-  value: boolean,
-}
-
-type actionBackground = {
-  type: 'SET_BACKGROUND',
-  value: string,
-}
-
-type actionWeather = {
-  type: 'SET_WEATHER',
-  value: {
-    temperatureNow: number,
-    condition: {
-      icon: number,
-      text: string,
-    }
-    feels: number,
-    wind: number,
-    humidity: number,
-    period: 0|1,
-    nextDays: {
-      temperature: number,
-      icon: number,
-    }[],
-  }
-}
 
 const state: State = {
   ready: false,
   backgroundURL: '',
   language: 'en',
   unit: 'c',
+  now: 0,
   voice: false,
   command: false,
   error: '',
@@ -128,29 +20,59 @@ const state: State = {
   latStr: '',
   lonStr: '',
   timeOffsetSec: 0,
-  condition: {
-    icon: 0,
-    text: '',
+  condition: 0,
+  temperatureNow: {
+    c: 0,
+    f: 0,
   },
-  temperatureNow: 0,
-  feels: 0,
+  feels: {
+    c: 0,
+    f: 0,
+  },
   wind: 0,
   humidity: 0,
-  now: 0,
   season: '',
   period: '',
+  isDay: 0,
   nextDays: [
     {
-      temperature: 0,
-      icon: 0,
+      temperature: {
+        min: {
+          c: 0,
+          f: 0
+          },
+        max: {
+          c: 0,
+          f: 0
+          }
+      },
+      condition: 0,
     },
     {
-      temperature: 0,
-      icon: 0,
+      temperature: {
+        min: {
+          c: 0,
+          f: 0
+          },
+        max: {
+          c: 0,
+          f: 0
+          }
+      },
+      condition: 0,
     },
     {
-      temperature: 0,
-      icon: 0,
+      temperature: {
+        min: {
+          c: 0,
+          f: 0
+          },
+        max: {
+          c: 0,
+          f: 0
+          }
+      },
+      condition: 0,
     },
   ]
 };
@@ -161,20 +83,16 @@ type myAction = actionLocation | actionLanguage | actionCommand | actionBackgrou
 const stateBackup: State[] = [];
 let stateIndex: number = -1;
 
-function saveState(): void {
-  
-}
-
 export function setState(action: myAction):void {
   if (action.type !== 'SET_NOW' && action.type !== 'SET_ERROR') {
     stateBackup.push(copyObject(state));
     stateIndex += 1;
     if (stateBackup.length > 10) {
       stateBackup.shift();
-      stateIndex -+ 1;
+      stateIndex -= 1;
     }
   }
-  
+
   switch (action.type) {
     case 'SET_LOCATION': {
       const { value } = action;
@@ -197,6 +115,7 @@ export function setState(action: myAction):void {
     };
     case 'SET_NOW': {
       const { value } = action;
+      const { now, period, season } = value;
       state.now = value.now;
       state.period = value.period;
       state.season = value.season;
@@ -204,10 +123,18 @@ export function setState(action: myAction):void {
     };
     case 'SET_UNIT': {
       const { value } = action;
+      state.unit = value;
       break;
     };
     case 'SET_WEATHER': {
       const { value } = action;
+      state.temperatureNow = value.temperatureNow;
+      state.feels = value.feels;
+      state.condition = value.condition;
+      state.wind = value.wind;
+      state.humidity = value.humidity;
+      state.isDay = value.isDay;
+      state.nextDays = value.nextDays;
       break;
     };
     case 'SET_ERROR': {
@@ -225,7 +152,7 @@ export function setState(action: myAction):void {
       state.backgroundURL = value;
     }
   }
-  
+
 }
 
 export default state;

@@ -15,9 +15,9 @@ export function  replaceInnerHTML(element: HTMLElement, newHTML: (Node | string)
   }
 }
 
-export function getIconPath(season: string, hours: number, condition: number) {
+export function getIconPath(isDay: 0|1, condition: number) {
+  const time: string = isDay ? 'day' : 'night';
   let fileName: string;
-  let time: string;
   switch (condition) {
     case 1000:
     case 1072:
@@ -102,17 +102,9 @@ export function getIconPath(season: string, hours: number, condition: number) {
       break;
     default:
       fileName = 'clear';
-      console.error('Received wrong weathers condition code: ', condition);
       break;
   };
 
-  if (season === 'summer') {
-    time = hours > 20 || hours < 6 ? 'night' : 'day';
-  } else if (season === 'winter') {
-    time = hours > 18 || hours < 8 ? 'night' : 'day';
-  } else {
-    time = hours > 19 || hours < 7 ? 'night' : 'day';
-  }
   return `/src/img/icons/${time}/${fileName}.svg`
 }
 
@@ -156,9 +148,9 @@ export function formatGeo(coordinate: string): string {
   return `${fragments[0]} ${fragments[1]} ${fragments[3]}`;
 }
 
-export function shuffleArr(arr: Array<any>): Array<any> {
+export function shuffleArr(arr: any[]): any[] {
   const shuffledArr = Array.from(arr);
-  let j: number; 
+  let j: number;
   let temp: any;
   for (let i = shuffledArr.length - 1; i > 0; i -= 1) {
     j = Math.floor(Math.random() * (i + 1));
@@ -211,12 +203,12 @@ export function formatNowUTC(dateMs: number, language: string = 'en'): string {
 export function getFutureDay(dateMs: number, jump: number,language: string = 'en'): string {
   const date = new Date(dateMs);
   const t = createTranslator(language);
-  return t(`DAY${(date.getUTCDay() + jump) % 7}`);
+  return t(`FULLDAY${(date.getUTCDay() + jump) % 7}`);
 }
 
-export function getTimes(timeOffsetSec: number, latitude: number): 
+export function getTimes(timeOffsetSec: number, latitude: number):
 {
-  now: number, 
+  now: number,
   season: string,
   period: string,
  } {
@@ -248,9 +240,13 @@ export function getTimes(timeOffsetSec: number, latitude: number):
   } else {
     period = 'evening';
   }
-  return {  
-    now, 
+  return {
+    now,
     season,
     period,
   }
+}
+
+export function convertKmPHoursToMPSec(value: number): number {
+  return ((value*60)/1000);
 }

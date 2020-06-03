@@ -22,8 +22,8 @@
               <option value="be">BE</option>
             </select>
             <button  id="js-unitBtn" class="controls_unit-btn" data-unit="">
-              <span data-btn="unitF" class="controls_unit-f">F</span>
-              <span data-btn="unitC" class="controls_unit-c">C</span>
+              <span data-btn="f" class="controls_unit-f">F</span>
+              <span data-btn="c" class="controls_unit-c">C</span>
             </button>
           </div>
           <div class="controls_helpers">
@@ -52,23 +52,26 @@
         <div class="weather_wrapper">
           <div class="weather">
             <div class="weather_now now">
-              <div id="js-temperature" class="now_temperature"></div>
+              <div  class="now_temperature">
+                <span id="js-temperature"></span>
+                <span id="js-temperature-unit" class="now_unit"></span>
+              </div>
               <div class="now_climate">
                 <img src="" alt="" id="js-iconNow" class="now_icon" height="128px" width="128px">
                 <div class="now_climate-field">
                   <div id="js-condition" class="now_param"></div>
                 </div>
                 <div class="now_climate-field">
-                  <span class="now_param">feels like:</span>
-                  <span id="js-feels" class="now_param"></span>
+                  <span id="js-feels-title" class="now_param now_param__title"></span>
+                  <span id="js-feels" class="now_param now_param__feels"></span>
                 </div>
                 <div class="now_climate-field">
-                  <span class="now_param">wind:</span>
+                  <span id="js-wind-title" class="now_param now_param__title"></span>
                   <span id="js-wind" class="now_param"></span>
                 </div>
                 <div class="now_climate-field">
-                  <span class="now_param">humidity:</span>
-                  <span id="js-humidity" class="now_param"></span>
+                  <span id="js-humidity-title" class="now_param now_param__title"></span>
+                  <span id="js-humidity" class="now_param now_param__humidity"></span>
                 </div>
               </div>
             </div>
@@ -77,21 +80,21 @@
                 <div id="js-titleNext1" class="future_title"></div>
                 <div class="future_weather">
                   <span id="js-temperatureNext1" class="future_temperature"></span>
-                  <img src="" alt="" id="js-iconNext1" class="future_icon" height="64px" width="64px">
+                  <img src="" alt="icon" id="js-iconNext1" class="future_icon" height="64px" width="64px">
                 </div>
               </div>
               <div class="future_day">
                 <div id="js-titleNext2" class="future_title"></div>
                 <div class="future_weather">
                   <span id="js-temperatureNext2" class="future_temperature"></span>
-                  <img src="" alt="" id="js-iconNext2" class="future_icon" height="64px" width="64px">
+                  <img src="" alt="icon" id="js-iconNext2" class="future_icon" height="64px" width="64px">
                 </div>
               </div>
               <div class="future_day">
                 <div id="js-titleNext3" class="future_title"></div>
                 <div class="future_weather">
                   <span id="js-temperatureNext3" class="future_temperature"></span>
-                  <img src="" alt="" id="js-iconNext3" class="future_icon" height="64px" width="64px">
+                  <img src="" alt="icon" id="js-iconNext3" class="future_icon" height="64px" width="64px">
                 </div>
               </div>
             </div>
@@ -109,7 +112,10 @@
                 <span id="js-longitude" class="geo_param"></span>
               </div>
             </div>
-            <div id="js-map" class="geo_map">
+            <div class="geo_map-wrapper">
+              <div class="geo_map-background"></div>
+              <div id="js-map" class="geo_map">
+            </div>
             </div>
             <svg width="0" height="0">
               <defs>

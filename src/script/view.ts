@@ -1,13 +1,9 @@
-import state, { State } from './state';
-import { replaceInnerHTML, getIconPath, copyObject, formatGeo, createBackground, formatNowUTC, getFutureDay } from './utils';
+import state from './state';
+import { State, RenderState } from './types';
+import { replaceInnerHTML, getIconPath, copyObject, formatGeo, createBackground, formatNowUTC, getFutureDay, convertKmPHoursToMPSec } from './utils';
 import L from '../leaflet/leaflet';
 import createTranslator from './int';
 import preloader from '../components/preloader/preloader';
-
-class RenderState {
-  app: State;
-  background: HTMLImageElement;
-}
 
 class View{
   languageNode = document.getElementById('js-language') as HTMLSelectElement;
@@ -20,11 +16,15 @@ class View{
   describeNode = document.getElementById('js-describe');
   dateNode = document.getElementById('js-date');
   temperatureNode = document.getElementById('js-temperature');
+  temperatureUnitNode = document.getElementById('js-temperature-unit');
   iconNowNode = document.getElementById('js-iconNow') as HTMLImageElement;
   conditionNowNode = document.getElementById('js-condition');
   feelsNode = document.getElementById('js-feels');
   windNode = document.getElementById('js-wind');
   humidityNode = document.getElementById('js-humidity');
+  feelTitlesNode = document.getElementById('js-feels-title');
+  windTitleNode = document.getElementById('js-wind-title');
+  humidityTitleNode = document.getElementById('js-humidity-title');
   mapNod = document.getElementById('js-map');
   latitudeNode = document.getElementById('js-latitude');
   longitudeNode = document.getElementById('js-longitude');
@@ -49,8 +49,8 @@ class View{
   mapLayer: any;
   isMapReady: boolean;
 
-  renderState = new RenderState;
-  oldState = new RenderState;
+  renderState = {} as RenderState;
+  oldState = {} as RenderState;
 
   constructor() {
     preloader.show();
@@ -59,26 +59,6 @@ class View{
 
     this.renderState.background = document.createElement('img');
     this.oldState.background = this.renderState.background;
-    
-
-    // document.body.prepend(this.renderState.background);
-    // this.renderState.background.classList.add('background', 'visible');
-    // this.renderState.background.src = this.renderState.app.backgroundURL;
-    
-    // this.renderState.background.addEventListener('load', ()=> {
-    //   this.startScreen.style.opacity = '0';
-    //   setTimeout(()=> {
-    //     this.startScreen.remove();
-    //     preloader.hide();
-    //   }, 400);
-    // }, {once: true});
-    // this.renderState.background.addEventListener('error', ()=> {
-    //   this.startScreen.style.opacity = '0';
-    //   setTimeout(()=> {
-    //     this.startScreen.remove();
-    //     preloader.hide();
-    //   }, 400);
-    // }, {once: true});
 
     const t = createTranslator(this.renderState.app.language);
 
@@ -111,36 +91,44 @@ class View{
       this.commandBtn.classList.add('active');
     }
 
-    this.placeNode.append(this.renderState.app.city.name);
-    this.describeNode.append(this.renderState.app.city.formatted);
-    this.dateNode.append(formatNowUTC(this.renderState.app.now, state.language));
-    this.latitudeNode.append(formatGeo(this.renderState.app.latStr));
-    this.longitudeNode.append(formatGeo(this.renderState.app.lonStr));
-    this.conditionNowNode.append(this.renderState.app.condition.text);
-    this.temperatureNode.append(`${this.renderState.app.temperatureNow}`);
-    this.feelsNode.append(`${this.renderState.app.feels}`);
-    this.windNode.append(`${this.renderState.app.wind}`);
-    this.humidityNode.append(`${this.renderState.app.humidity}`);
+    this.placeNode.innerText = this.renderState.app.city.name;
+    this.describeNode.innerText = this.renderState.app.city.formatted;
+    this.dateNode.innerText = formatNowUTC(this.renderState.app.now, state.language);
+    this.latitudeNode.innerText = formatGeo(this.renderState.app.latStr);
+    this.longitudeNode.innerText = formatGeo(this.renderState.app.lonStr);
+    this.conditionNowNode.innerText = `${this.renderState.app.condition}`;
+    this.temperatureNode.innerText = `${
+      Math.round(this.renderState.app.temperatureNow[this.renderState.app.unit])
+    }`;
+    this.temperatureUnitNode.innerText = `°${this.renderState.app.unit.toUpperCase()}`;
+    this.feelsNode.innerText = `${Math.round(this.renderState.app.feels[this.renderState.app.unit])}`;
+    this.windNode.innerText = `${(convertKmPHoursToMPSec(this.renderState.app.wind)).toFixed(1)} ${t('MPS')}`;
+    this.humidityNode.innerText = `${this.renderState.app.humidity}`;
+    this.feelTitlesNode.innerText = `${t('FEELS')}`
+    this.windTitleNode.innerText = `${t('WIND')}`
+    this.humidityTitleNode.innerText = `${t('HUMIDITY')}`
     this.iconNowNode.src = getIconPath(
-      this.renderState.app.season,
-      (new Date(this.renderState.app.now)).getUTCHours(), 
-      this.renderState.app.condition.icon
+      this.renderState.app.isDay,
+      this.renderState.app.condition
     );
 
-    this.latitudeTitleNode.innerHTML = `${t('LONGITUDE')}`;
-    this.longitudeTitleNode.innerHTML = `${t('LATITUDE')}`;
+    this.latitudeTitleNode.innerText = `${t('LONGITUDE')}`;
+    this.longitudeTitleNode.innerText = `${t('LATITUDE')}`;
     this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`
     this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`
-    
+
     this.nextDays.forEach((day, i) => {
-      day.nameNode.append(
-          getFutureDay(this.renderState.app.now, i + 1, this.renderState.app.language)
-        );
-      day.temperature.append(`${this.renderState.app.nextDays[i].temperature}`);
+      day.nameNode.innerText = getFutureDay(
+        this.renderState.app.now, i, this.renderState.app.language
+      );
+      day.temperature.innerText = `${
+        Math.round(this.renderState.app.nextDays[i].temperature.min[this.renderState.app.unit])
+      } - ${
+        Math.round(this.renderState.app.nextDays[i].temperature.max[this.renderState.app.unit])
+      }`;
       day.icon.src = getIconPath(
-        this.renderState.app.season,
-        (new Date(this.renderState.app.now)).getUTCHours(),
-        this.renderState.app.nextDays[i].icon);
+        this.renderState.app.isDay,
+        this.renderState.app.nextDays[i].condition);
     });
  }
 
@@ -153,12 +141,13 @@ class View{
         preloader.hide();
       }
     }
-    
+
     this.render();
   }
 
   render(): void {
     this.renderState.app = copyObject(state);
+    const t = createTranslator(this.renderState.app.language);
 
     if (this.renderState.app.ready && this.isStartScreen) {
       this.startScreen.style.opacity = '0';
@@ -168,29 +157,17 @@ class View{
       }, 400);
     }
 
-    if (this.renderState.app.language !== this.oldState.app.language) {
-      const t = createTranslator(this.renderState.app.language);
-      this.languageNode.value = this.renderState.app.language;
-
-      this.latitudeTitleNode.innerHTML = `${t('LONGITUDE')}`;
-      this.longitudeTitleNode.innerHTML = `${t('LATITUDE')}`;
-      this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`
-      this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`
-  
-    }
-
     if (this.renderState.background !== this.oldState.background) {
         this.oldState.background.classList.remove('visible');
-        
+
         document.body.prepend(this.renderState.background);
         this.renderState.background.classList.add('visible');
         const oldBackground = this.oldState.background;
         setTimeout(()=> oldBackground.remove(), 400);
     }
 
-    if (this.renderState.app.lon !== this.oldState.app.lon 
+    if (this.renderState.app.lon !== this.oldState.app.lon
       || this.renderState.app.lat !==this.renderState.app.lat) {
-      //this.map.setView({lon: this.renderState.app.lon, lat: this.renderState.app.lat});
       this.map.flyTo({lon: this.renderState.app.lon, lat: this.renderState.app.lat});
     }
 
@@ -220,48 +197,111 @@ class View{
 
     if (this.renderState.app.city.name !== this.oldState.app.city.name
       || this.renderState.app.city.formatted !== this.oldState.app.city.formatted) {
-      replaceInnerHTML(this.placeNode, this.renderState.app.city.name);
-      replaceInnerHTML(this.describeNode, this.renderState.app.city.formatted);
+      this.placeNode.innerText = this.renderState.app.city.name;
+      this.describeNode.innerText = this.renderState.app.city.formatted;
     }
 
     if (this.renderState.app.lat !== this.oldState.app.lat) {
-      replaceInnerHTML(this.latitudeNode, formatGeo(this.renderState.app.latStr));
-      replaceInnerHTML(this.longitudeNode, formatGeo(this.renderState.app.lonStr));
+      this.latitudeNode.innerText = formatGeo(this.renderState.app.latStr);
+     this.longitudeNode.innerText = formatGeo(this.renderState.app.lonStr);
     }
 
-    if (this.renderState.app.condition.icon !== this.oldState.app.condition.icon) {
-      replaceInnerHTML(this.conditionNowNode, this.renderState.app.condition.text);
+    if (this.renderState.app.condition !== this.oldState.app.condition) {
+      this.conditionNowNode.innerText = `${this.renderState.app.condition}`;
       this.iconNowNode.src = getIconPath(
-        this.renderState.app.season,
-        (new Date(this.renderState.app.now)).getUTCHours(),
-        this.renderState.app.condition.icon);
+        this.renderState.app.isDay,
+        this.renderState.app.condition);
     }
 
-    if (this.renderState.app.temperatureNow !== this.oldState.app.temperatureNow) {
-      replaceInnerHTML(this.temperatureNode, `${this.renderState.app.temperatureNow}`)
+    if (this.renderState.app.temperatureNow[this.renderState.app.unit] !== this.oldState.app.temperatureNow[this.renderState.app.unit]) {
+      this.temperatureNode.innerText = `${Math.round(
+        this.renderState.app.temperatureNow[this.renderState.app.unit]
+        )}`;
     }
 
-    if (this.renderState.app.feels !== this.oldState.app.feels) {
-      replaceInnerHTML(this.feelsNode, `${this.renderState.app.feels}`)
+    if (this.renderState.app.feels[this.renderState.app.unit] !== this.oldState.app.feels[this.renderState.app.unit]) {
+      this.feelsNode.innerText = `${Math.round(this.renderState.app.feels[this.renderState.app.unit])}`;
     }
 
     if (this.renderState.app.wind !== this.oldState.app.wind) {
-      replaceInnerHTML(this.windNode, `${this.renderState.app.wind}`)
+        this.windNode.innerText = `${(convertKmPHoursToMPSec(this.renderState.app.wind)).toFixed(1)} ${t('MPS')}`;
     }
 
     if (this.renderState.app.humidity !== this.oldState.app.humidity) {
-      replaceInnerHTML(this.humidityNode, `${this.renderState.app.humidity}`)
+      this.humidityNode.innerText = `${this.renderState.app.humidity}`;
     }
 
     if (this.renderState.app.language !== this.oldState.app.language) {
+      this.languageNode.value = this.renderState.app.language;
+
+      this.latitudeTitleNode.innerText = `${t('LONGITUDE')}`;
+      this.longitudeTitleNode.innerText = `${t('LATITUDE')}`;
+      this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`
+      this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`
+
       this.mapLayer.setUrl(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`);
+
+      this.nextDays.forEach((day, i) => {
+        day.nameNode.innerText = getFutureDay(
+          this.renderState.app.now, i, this.renderState.app.language
+        );
+      });
+
+      this.windNode.innerText = `${
+        (convertKmPHoursToMPSec(this.renderState.app.wind)).toFixed(1)} ${t('MPS')
+      }`;
+
+      this.feelTitlesNode.innerText = `${t('FEELS')}`
+      this.windTitleNode.innerText = `${t('WIND')}`
+      this.humidityTitleNode.innerText = `${t('HUMIDITY')}`
     }
 
+
     if (this.renderState.app.now !== this.oldState.app.now) {
-      replaceInnerHTML(
-        this.dateNode, 
-        formatNowUTC(this.renderState.app.now, this.renderState.app.language),
-      );
+      this.dateNode.innerText = formatNowUTC(
+        this.renderState.app.now, this.renderState.app.language);
+
+      const oldDate = new Date(this.oldState.app.now);
+      const renderDate = new Date(this.renderState.app.now);
+      if (oldDate.getUTCDay() !== renderDate.getUTCDay()) {
+        this.nextDays.forEach((day, i) => {
+          day.nameNode.innerText = getFutureDay(
+            this.renderState.app.now, i, this.renderState.app.language
+          );
+        });
+      }
+    }
+
+    this.nextDays.forEach((day, i) => {
+      if (this.renderState.app.nextDays[i].temperature.min.c !== this.oldState.app.nextDays[i].temperature.min.c
+          || this.renderState.app.nextDays[i].temperature.max.c !== this.oldState.app.nextDays[i].temperature.max.c) {
+        day.temperature.innerText = `${
+          Math.round(this.renderState.app.nextDays[i].temperature.min[this.renderState.app.unit])
+          } - ${
+            Math.round(this.renderState.app.nextDays[i].temperature.max[this.renderState.app.unit])
+          }`;
+      };
+      if (this.renderState.app.nextDays[i].condition !== this.oldState.app.nextDays[i].condition) {
+        day.icon.src = getIconPath(
+          this.renderState.app.isDay,
+          this.renderState.app.nextDays[i].condition);
+      };
+    });
+
+    if (this.renderState.app.unit !== this.oldState.app.unit) {
+      this.temperatureNode.innerText = `${
+        Math.round(this.renderState.app.temperatureNow[this.renderState.app.unit])
+      }`;
+      this.temperatureUnitNode.innerText = `°${this.renderState.app.unit.toUpperCase()}`;
+      this.feelsNode.innerText = `${Math.round(this.renderState.app.feels[this.renderState.app.unit])}`;
+
+      this.nextDays.forEach((day, i) => {
+          day.temperature.innerText = `${
+            Math.round(this.renderState.app.nextDays[i].temperature.min[this.renderState.app.unit])
+            } - ${
+              Math.round(this.renderState.app.nextDays[i].temperature.max[this.renderState.app.unit])
+            }`;
+      });
     }
 
     this.oldState.app = copyObject(this.renderState.app);

@@ -1,4 +1,4 @@
-import { getLocation, getCityByCoord, imagesLinks } from './getData';
+import { getLocation, getCityByCoord, imagesLinks, getWeather } from './getData';
 import state, { setState } from './state';
 import handleError from './error';
 import { RequestLocation } from '../components/confirmLocation/reqestLocation';
@@ -6,13 +6,13 @@ import { getUserSearch } from '../components/addUserSearch/addUserSearch';
 import { status, UserLocation } from './types';
 import preloader from '../components/preloader/preloader';
 import { getTimes } from './utils';
-  
+
 export async function setStartLocation(onResultCallback?: (status: status) => any): Promise<status> {
-  let location = await getLocation();
+  const location = await getLocation();
   if (location.status === 'ok') {
     const {lon, lat, city, timeOffsetSec, DMS} = location;
     setState({
-      type: 'SET_LOCATION', 
+      type: 'SET_LOCATION',
       value: {
         lon, lat, city, timeOffsetSec,
         latStr: DMS.lat,
@@ -25,7 +25,7 @@ export async function setStartLocation(onResultCallback?: (status: status) => an
     setState({type: 'SET_NOW', value: time});
     setState({type: 'SET_LANGUAGE', value: location.lang});
     await setStateBackground(time.season, time.period);
-
+    await setWeather();
   } else {
     setState({type: 'SET_ERROR', value: handleError('NO_LOCATION')});
   }
@@ -36,7 +36,7 @@ export async function setStartLocation(onResultCallback?: (status: status) => an
 }
 
 export async function askUserHisLocation(onResultCallback?: (status: status) => any): Promise<status> {
-  let location = new UserLocation;
+  let location = new UserLocation();
 
   const requestLocation = new RequestLocation();
   location = await requestLocation.getUserLocation();
@@ -44,7 +44,7 @@ export async function askUserHisLocation(onResultCallback?: (status: status) => 
   if (location.status === 'ok') {
     const {lon, lat, city, timeOffsetSec, DMS} = location;
     setState({
-      type: 'SET_LOCATION', 
+      type: 'SET_LOCATION',
       value: {
         lon, lat, city, timeOffsetSec,
         latStr: DMS.lat,
@@ -54,10 +54,11 @@ export async function askUserHisLocation(onResultCallback?: (status: status) => 
 
     const time = getTimes(timeOffsetSec, lat);
     await imagesLinks.generate(time.season, time.period);
-    
+
     setState({type: 'SET_NOW', value: time});
     setState({type: 'SET_LANGUAGE', value: location.lang});
     setState({type: 'SET_BACKGROUND', value: (imagesLinks.getLink()).value});
+    await setWeather();
   }
 
   if (onResultCallback) {
@@ -97,7 +98,7 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
     if (newPlace.status === 'ok') {
       const {lon, lat, city, timeOffsetSec, DMS} = newPlace;
       setState({
-        type: 'SET_LOCATION', 
+        type: 'SET_LOCATION',
         value: {
           lon, lat, city, timeOffsetSec,
           latStr: DMS.lat,
@@ -108,7 +109,7 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
       const time = getTimes(timeOffsetSec, lat);
       setState({type: 'SET_NOW', value: time});
       await setStateBackground(time.season, time.period);
-
+      await setWeather();
     } else {
       setState({type: 'SET_ERROR', value: handleError('NO_SEARCH')});
     }
@@ -117,7 +118,7 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
     }
     searchInp.addEventListener('focus', async () => {await searchOn()}, { once: true });
   }
-
+  searchForm.addEventListener('submit', e => {if (searchInp.value === '') e.preventDefault()});
   searchInp.addEventListener('focus', async () => {await searchOn()}, { once: true });
 }
 
@@ -126,7 +127,7 @@ export function initLanguageSelect(onResultCallback?: () => any): void {
   selectNode.addEventListener('change', async() => {
     preloader.show();
     const location = await getCityByCoord(state.lat, state.lon, selectNode.value);
-    if (location.status = 'ok') {
+    if (location.status === 'ok') {
       setState({
         type: 'SET_LOCATION',
         value: {
@@ -147,7 +148,7 @@ export function initLanguageSelect(onResultCallback?: () => any): void {
   })
 }
 
-export async function initBackgroundRefresh(onResultCallback?: () => any): Promise<void> {
+export function initBackgroundRefresh(onResultCallback?: () => any): void {
   const button = document.getElementById('js-backgrBtn');
   button.addEventListener('click', () => {
     const backgroundUrl = imagesLinks.getLink();
@@ -162,6 +163,16 @@ export async function initBackgroundRefresh(onResultCallback?: () => any): Promi
   })
 }
 
+export function initUnitChange(onResultCallback?: () => any): void {
+  const button = document.getElementById('js-unitBtn');
+  button.addEventListener('click', (e:MouseEvent) => {
+    const target = e.target as HTMLElement;
+    setState({type: 'SET_UNIT', value: target.dataset.btn});
+    if (onResultCallback) {
+      onResultCallback();
+    }
+  })
+}
 
 export function initClock(onResultCallback?: () => any): void {
   setInterval(() => {
@@ -179,8 +190,22 @@ export async function setStateBackground(season?: string, time?: string): Promis
     await imagesLinks.generate(season, time);
   }
   backgroundURL = imagesLinks.getLink();
-  if (backgroundURL.status = 'error') {
+  if (backgroundURL.status === 'error') {
     setState({type: 'SET_ERROR', value: handleError('NO_BACKGROUND')});
   }
   setState({type: 'SET_BACKGROUND', value: backgroundURL.value});
+}
+
+export async function setWeather(onResultCallback?: (status: status) => any): Promise<status> {
+  const weather = await getWeather(state.lat, state.lon);
+  if (weather.status === 'ok') {
+    setState({type: 'SET_WEATHER', value: weather.value});
+  } else {
+    setState({type: 'SET_ERROR', value: 'NO_FORECAST'});
+  }
+
+  if (onResultCallback) {
+    onResultCallback(weather.status);
+  }
+  return weather.status;
 }
