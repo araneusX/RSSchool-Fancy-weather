@@ -121,7 +121,6 @@ body {
   &_unit-btn {
     display: flex;
     align-items: stretch;
-
   }
 
   &_unit-f, &_unit-c {
@@ -150,7 +149,7 @@ body {
     padding: 0;
     margin: 0 10px;
     opacity: 0.8;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
     color: white;
     outline: none;
@@ -163,9 +162,18 @@ body {
     }
   }
 
+  &_language {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   &_background-btn {
     background-image: url("/src/img/img-btn.png");
     background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
 
@@ -385,7 +393,6 @@ body {
 .future {
   display: flex;
   width: 50%;
-
   text-shadow: 0 0 10px black, 0 0 10px black,
   0 0 10px black, 0 0 10px black,
   0 0 10px black, 0 0 10px black;
@@ -399,28 +406,10 @@ body {
     width: auto;
   }
 
-
   @media (max-width: 520px) {
     flex-direction: row;
     justify-content: space-around;
     margin-top: 10px;
-  }
-
-  &_temperature {
-    align-self: flex-end;
-
-    &::after {
-      content: '°';
-    }
-
-    @media (max-width: 767px) {
-      position: relative;
-      left: 15px;
-    }
-
-    @media (max-width: 767px) {
-      left: -15px;
-    }
   }
 
   &_day {
@@ -430,43 +419,58 @@ body {
     background-color: rgba(36, 34, 34, 0.692);
     border: 1px solid rgba(78, 78, 78, 0.856);
     border-radius: 10px;
-    padding: 10px 0 10px 10px;
+    padding: 10px;
 
     @media (max-width: 767px) {
       margin: 10px;
       padding: 10px;
+      min-width: 100px;
     }
 
     @media (max-width: 520px) {
       margin: 20px 5px;
+      min-width: 0;
+
     }
   }
 
   &_title {
-    @media (max-width: 767px) {
-      text-align: center;
-    }
-  }
+    align-self: flex-start;
 
-  &_weather {
-    display: flex;
-    
-    @media (max-width: 520px) {
-      flex-direction: column-reverse;
+    @media (max-width: 767px) {
+      align-self: center;
     }
   }
 
   &_icon {
     position: relative;
-    top: -10px;
-    left: -10px;
+    align-self: flex-end;
 
     @media (max-width: 520px) {
-      top: 0;
-      left: 0;
+      align-self: center;
+    }
+  }
+
+  &_temperature {
+    align-self: flex-start;
+    
+    &::after {
+      content: '°';
+    }
+  
+    @media (max-width: 767px) {
+      align-self: center;
+    }
+  
+    @media (max-width: 520px) {
+      align-self: flex-start;
     }
 
+    align-self: flex-start;
+
+  
   }
+
 }
 
 .geo {

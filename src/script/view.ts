@@ -76,10 +76,12 @@ class View{
     });
     this.map.whenReady(()=> {this.isMapReady = true});
 
-    this.mapLayer = L.tileLayer(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`, {
+    this.mapLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-        + ' | <a href="https://maps.wikimedia.org">Wikimedia.org</a>',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        // `https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`
+        // attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+        // + ' | <a href="https://maps.wikimedia.org">Wikimedia.org</a>',
     })
     this.mapLayer.addTo(this.map);
 
@@ -99,7 +101,9 @@ class View{
     this.dateNode.innerText = formatNowUTC(this.renderState.app.now, state.language);
     this.latitudeNode.innerText = formatGeo(this.renderState.app.latStr);
     this.longitudeNode.innerText = formatGeo(this.renderState.app.lonStr);
-    this.conditionNowNode.innerText = `${this.renderState.app.condition}`;
+    this.conditionNowNode.innerText = t(
+      `${this.renderState.app.condition}${this.renderState.app.isDay ? 'day' : 'night'}`
+    );
     this.temperatureNode.innerText = `${
       Math.round(this.renderState.app.temperatureNow[this.renderState.app.unit])
     }`;
@@ -219,7 +223,11 @@ class View{
       this.conditionNowNode.innerText = `${this.renderState.app.condition}`;
       this.iconNowNode.src = getIconPath(
         this.renderState.app.isDay,
-        this.renderState.app.condition);
+        this.renderState.app.condition
+      );
+      this.conditionNowNode.innerText = t(
+        `${this.renderState.app.condition}${this.renderState.app.isDay ? 'day' : 'night'}`
+      );
     }
 
     if (this.renderState.app.temperatureNow[this.renderState.app.unit] !== this.oldState.app.temperatureNow[this.renderState.app.unit]) {
@@ -245,10 +253,13 @@ class View{
 
       this.latitudeTitleNode.innerText = `${t('LONGITUDE')}`;
       this.longitudeTitleNode.innerText = `${t('LATITUDE')}`;
-      this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`
-      this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`
+      this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`;
+      this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`;
+      this.conditionNowNode.innerText = t(
+        `${this.renderState.app.condition}${this.renderState.app.isDay ? 'day' : 'night'}`
+      );
 
-      this.mapLayer.setUrl(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`);
+      // this.mapLayer.setUrl(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`);
 
       this.nextDays.forEach((day, i) => {
         day.nameNode.innerText = getFutureDay(
