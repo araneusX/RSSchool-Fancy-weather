@@ -1,6 +1,9 @@
 import state from './state';
-import { State, RenderState } from './types';
-import { replaceInnerHTML, getIconPath, copyObject, formatGeo, createBackground, formatNowUTC, getFutureDay, convertKmPHoursToMPSec } from './utils';
+import { RenderState } from './types';
+import {
+  getIconPath, copyObject, formatGeo, createBackground,
+  formatNowUTC, getFutureDay, convertKmPHoursToMPSec,
+} from './utils';
 import L from '../leaflet/leaflet';
 import createTranslator from './int';
 import preloader from '../components/preloader/preloader';
@@ -67,7 +70,7 @@ class View{
       zoom: 9,
       boxZoom: false,
       doubleClickZoom: false,
-      dragging: false,
+      // dragging: false,
       keyboard: false,
       scrollWheelZoom: false
     });
@@ -169,6 +172,12 @@ class View{
     if (this.renderState.app.lon !== this.oldState.app.lon
       || this.renderState.app.lat !==this.renderState.app.lat) {
       this.map.flyTo({lon: this.renderState.app.lon, lat: this.renderState.app.lat});
+      const weatherIcon = L.icon({
+        iconUrl: getIconPath(this.renderState.app.isDay, this.renderState.app.condition),
+        iconSize:     [64, 64],
+        iconAnchor:   [32, 32],
+      });
+      L.marker([this.renderState.app.lat, this.renderState.app.lon], {icon: weatherIcon}).addTo(this.map);
     }
 
     if (this.renderState.app.unit !== this.oldState.app.unit) {

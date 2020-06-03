@@ -17,23 +17,27 @@ export const imagesLinks = {
 
   async generate(season: string, time: string): Promise<void> {
     if (!(this.cash.season === season && this.cash.time === time)) {
-      this.cash = { season, time },
-      // tslint:disable-next-line:no-console
-      console.log(`Show images by request: ${season}, ${time}`);
-      this.index = 0;
-      const data = await fetch(flickrByTags(FLICKR_KEY, season, time));
-      if (data.ok) {
-        const output = await data.json();
-        const photos = output.photos.photo.filter((photo) => photo.url_h);
-        if (photos.length > 0) {
-          this.store = shuffleArr(photos.map((photo) => photo.url_h));
+      try {
+        // tslint:disable-next-line:no-console
+        console.log(`Show images by request: ${season}, ${time}`);
+        const data = await fetch(flickrByTags(FLICKR_KEY, season, time));
+        if (data.ok) {
+          const output = await data.json();
+          const photos = output.photos.photo.filter((photo) => photo.url_h);
+          if (photos.length > 0) {
+            this.store = shuffleArr(photos.map((photo) => photo.url_h));
+          }
         }
+        this.cash = { season, time };
+        if (this.store.length === 0) {
+          this.store[0] = `/src/img/backgrounds/${season}/${time}.jpg`;
+        }
+      } catch (e) {
+        this.store[0] = `/src/img/backgrounds/${season}/${time}.jpg`;
       }
-      if (this.store.length === 0) {
-        this.store[0] = `/src/img/${season}/${time}.jpg`;
-      }
+      this.index = 0;
       this.isList = true;
-    }
+      }
   },
 
   getLink(): { status: status, value: string } {
