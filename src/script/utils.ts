@@ -1,3 +1,5 @@
+import createTranslator from "./int";
+
 export function  clearInnerHTML(element: HTMLElement): void {
   while (element.firstChild) {
     element.removeChild(element.firstChild);
@@ -13,8 +15,9 @@ export function  replaceInnerHTML(element: HTMLElement, newHTML: (Node | string)
   }
 }
 
-export function getIconPath(period: number, condition: number) {
+export function getIconPath(season: string, hours: number, condition: number) {
   let fileName: string;
+  let time: string;
   switch (condition) {
     case 1000:
     case 1072:
@@ -101,8 +104,16 @@ export function getIconPath(period: number, condition: number) {
       fileName = 'clear';
       console.error('Received wrong weathers condition code: ', condition);
       break;
+  };
+
+  if (season === 'summer') {
+    time = hours > 20 || hours < 6 ? 'night' : 'day';
+  } else if (season === 'winter') {
+    time = hours > 18 || hours < 8 ? 'night' : 'day';
+  } else {
+    time = hours > 19 || hours < 7 ? 'night' : 'day';
   }
-  return `../img/${period}/${fileName}.svg`
+  return `/src/img/icons/${time}/${fileName}.svg`
 }
 
 export function extractCity(apiObj: any) : {name:string, formatted: string} {
@@ -140,10 +151,9 @@ export function copyObject<T>(source: T): T {
   return JSON.parse(JSON.stringify(source));
 }
 
-export function formatGeo(coordinate: number): string {
-  const grad: number = Math.floor(coordinate);
-  const min: number = Math.floor((coordinate - grad) * 60);
-  return `${grad}\u00B0 ${min}'`;
+export function formatGeo(coordinate: string): string {
+  const fragments = coordinate.split(' ');
+  return `${fragments[0]} ${fragments[1]} ${fragments[3]}`;
 }
 
 export function shuffleArr(arr: Array<any>): Array<any> {
@@ -169,4 +179,78 @@ export async function createBackground(src: string): Promise<HTMLImageElement> {
   });
   await imageLoading();
   return backgroundImg;
+}
+
+export function formatNowUTC(dateMs: number, language: string = 'en'): string {
+  const date = new Date(dateMs);
+  const t = createTranslator(language);
+  const day = t(`DAY${date.getUTCDay()}`);
+  let dayDate = date.getUTCDate().toString();
+  if (dayDate.length === 1) {
+    dayDate = '0'+ dayDate;
+  }
+  let month = (date.getUTCMonth() + 1).toString();
+  if (month.length === 1) {
+    month = '0' + month;
+  }
+  let hours = date.getUTCHours().toString();
+  if (hours.length === 1) {
+    hours = '0'+ hours;
+  }
+  let min = date.getUTCMinutes().toString();
+    if (min.length === 1) {
+    min = '0'+ min;
+  }
+  let sec = date.getUTCSeconds().toString();
+  if (sec.length === 1) {
+  sec = '0'+ sec;
+}
+  return `${day} ${dayDate}.${month} ${hours}:${min}:${sec}`;
+}
+
+export function getFutureDay(dateMs: number, jump: number,language: string = 'en'): string {
+  const date = new Date(dateMs);
+  const t = createTranslator(language);
+  return t(`DAY${(date.getUTCDay() + jump) % 7}`);
+}
+
+export function getTimes(timeOffsetSec: number, latitude: number): 
+{
+  now: number, 
+  season: string,
+  period: string,
+ } {
+  const seasons = [
+    'winter',
+    'spring',
+    'summer',
+    'fall'
+  ];
+  const now = Date.now() + (timeOffsetSec * 1000);
+  const nowDate = new Date(now);
+  let mountIndex = nowDate.getUTCMonth() + 2;
+  const hours = nowDate.getUTCHours();
+  if (mountIndex === 13) {
+    mountIndex = 1;
+  }
+  let seasonIndex = Math.ceil(mountIndex/3) - 1;
+  if (latitude < 0) {
+    seasonIndex = (seasonIndex + 2) % 4;
+  }
+  const season =  seasons[seasonIndex];
+  let period: string;
+  if (hours < 7 || hours > 22) {
+    period = 'night';
+  } else if (hours < 11) {
+    period = 'morning';
+  } else if (hours < 17) {
+    period = 'sun';
+  } else {
+    period = 'evening';
+  }
+  return {  
+    now, 
+    season,
+    period,
+  }
 }

@@ -8,5 +8,10 @@ export class UserLocation {
     name: string;
     formatted: string;
   }
+  DMS: {
+    lon: string;
+    lat: string;
+  }
+  timeOffsetSec: number;
 };
 

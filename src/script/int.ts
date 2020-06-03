@@ -13,8 +13,14 @@ export const languages = {
     'LATITUDE': 'Latitude',
     'LONGITUDE': 'Longitude',
     'SEARCH PLACEHOLDER': 'Search city...',
-    'SEARCH SUBMIT': 'search'
-
+    'SEARCH SUBMIT': 'search',
+    'DAY0': 'Sun',
+    'DAY1': 'Mon',
+    'DAY2': 'Tue',
+    'DAY3': 'Wed',
+    'DAY4': 'Thu',
+    'DAY5': 'Fri',
+    'DAY6': 'Sat',
   },
   ru: {
     'MESSAGE_CONFIRM_LOCATION': 'Подтвердите Ваше местоположение',
@@ -30,7 +36,15 @@ export const languages = {
     'LATITUDE': 'Широта',
     'LONGITUDE': 'Долгота',
     'SEARCH PLACEHOLDER': 'Найти город...',
-    'SEARCH SUBMIT': 'поиск'
+    'SEARCH SUBMIT': 'ПОИСКСК',
+    'DAY0': 'Вс',
+    'DAY1': 'Пн',
+    'DAY2': 'Вт',
+    'DAY3': 'Ср',
+    'DAY4': 'Чт',
+    'DAY5': 'Пт',
+    'DAY6': 'Сб',
+
 
   },
   be: {
@@ -47,7 +61,15 @@ export const languages = {
     'LATITUDE': 'Шырата',
     'LONGITUDE': 'Даўгата',
     'SEARCH PLACEHOLDER': 'Пошук месца...',
-    'SEARCH SUBMIT': 'пошук'
+    'SEARCH SUBMIT': 'ПОШУК',
+    'DAY0': 'Няд',
+    'DAY1': 'Пан',
+    'DAY2': 'Аўт',
+    'DAY3': 'Сер',
+    'DAY4': 'Чац',
+    'DAY5': 'Пят',
+    'DAY6': 'Суб',
+
   },
 }
 

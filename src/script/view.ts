@@ -1,6 +1,5 @@
 import state, { State } from './state';
-import { replaceInnerHTML, getIconPath, copyObject, formatGeo, createBackground } from './utils';
-import { loadImage } from './getData';
+import { replaceInnerHTML, getIconPath, copyObject, formatGeo, createBackground, formatNowUTC, getFutureDay } from './utils';
 import L from '../leaflet/leaflet';
 import createTranslator from './int';
 import preloader from '../components/preloader/preloader';
@@ -43,39 +42,43 @@ class View{
     }
   ));
 
+  isStartScreen = true;
+
   mapNode = document.getElementById('js-map');
   map: any;
   mapLayer: any;
-  isMapRedy: boolean;
+  isMapReady: boolean;
 
   renderState = new RenderState;
   oldState = new RenderState;
 
   constructor() {
+    preloader.show();
     this.renderState.app = copyObject(state);
     this.oldState.app = copyObject(state);
+
     this.renderState.background = document.createElement('img');
     this.oldState.background = this.renderState.background;
     
-    document.body.prepend(this.renderState.background);
-    this.renderState.background.classList.add('background', 'visible');
-    this.renderState.background.src = this.renderState.app.backgroundURL;
-    preloader.show();
-    this.renderState.background.addEventListener('load', ()=> {
-      this.startScreen.style.opacity = '0';
-      setTimeout(()=> {
-        this.startScreen.remove();
-        preloader.hide();
-      }, 400);
-    }, {once: true});
-    this.renderState.background.addEventListener('error', ()=> {
-      this.startScreen.style.opacity = '0';
-      setTimeout(()=> {
-        this.startScreen.remove();
-        preloader.hide();
-      }, 400);
-    }, {once: true});
+
+    // document.body.prepend(this.renderState.background);
+    // this.renderState.background.classList.add('background', 'visible');
+    // this.renderState.background.src = this.renderState.app.backgroundURL;
     
+    // this.renderState.background.addEventListener('load', ()=> {
+    //   this.startScreen.style.opacity = '0';
+    //   setTimeout(()=> {
+    //     this.startScreen.remove();
+    //     preloader.hide();
+    //   }, 400);
+    // }, {once: true});
+    // this.renderState.background.addEventListener('error', ()=> {
+    //   this.startScreen.style.opacity = '0';
+    //   setTimeout(()=> {
+    //     this.startScreen.remove();
+    //     preloader.hide();
+    //   }, 400);
+    // }, {once: true});
 
     const t = createTranslator(this.renderState.app.language);
 
@@ -88,7 +91,7 @@ class View{
       keyboard: false,
       scrollWheelZoom: false
     });
-    this.map.whenReady(()=> {this.isMapRedy = true});
+    this.map.whenReady(()=> {this.isMapReady = true});
 
     this.mapLayer = L.tileLayer(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`, {
         maxZoom: 19,
@@ -110,15 +113,19 @@ class View{
 
     this.placeNode.append(this.renderState.app.city.name);
     this.describeNode.append(this.renderState.app.city.formatted);
-    this.dateNode.append(`${this.renderState.app.now}`.slice(0, 25));
-    this.latitudeNode.append(formatGeo(this.renderState.app.lat));
-    this.longitudeNode.append(formatGeo(this.renderState.app.lon));
+    this.dateNode.append(formatNowUTC(this.renderState.app.now, state.language));
+    this.latitudeNode.append(formatGeo(this.renderState.app.latStr));
+    this.longitudeNode.append(formatGeo(this.renderState.app.lonStr));
     this.conditionNowNode.append(this.renderState.app.condition.text);
     this.temperatureNode.append(`${this.renderState.app.temperatureNow}`);
     this.feelsNode.append(`${this.renderState.app.feels}`);
     this.windNode.append(`${this.renderState.app.wind}`);
     this.humidityNode.append(`${this.renderState.app.humidity}`);
-    this.iconNowNode.src = getIconPath(this.renderState.app.period, this.renderState.app.condition.icon);
+    this.iconNowNode.src = getIconPath(
+      this.renderState.app.season,
+      (new Date(this.renderState.app.now)).getUTCHours(), 
+      this.renderState.app.condition.icon
+    );
 
     this.latitudeTitleNode.innerHTML = `${t('LONGITUDE')}`;
     this.longitudeTitleNode.innerHTML = `${t('LATITUDE')}`;
@@ -126,21 +133,25 @@ class View{
     this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`
     
     this.nextDays.forEach((day, i) => {
-      day.nameNode.append(`${this.renderState.app.now}`.slice(0, 16));
+      day.nameNode.append(
+          getFutureDay(this.renderState.app.now, i + 1, this.renderState.app.language)
+        );
       day.temperature.append(`${this.renderState.app.nextDays[i].temperature}`);
-      day.icon.src = getIconPath(1, this.renderState.app.nextDays[i].icon);
+      day.icon.src = getIconPath(
+        this.renderState.app.season,
+        (new Date(this.renderState.app.now)).getUTCHours(),
+        this.renderState.app.nextDays[i].icon);
     });
-
-    console.log(this.renderState);
-    
-  }
+ }
 
   async synchronize(): Promise<void> {
     if (state.backgroundURL !== this.renderState.app.backgroundURL) {
       preloader.show();
       this.renderState.background = await createBackground(state.backgroundURL);
       this.renderState.app.backgroundURL = state.backgroundURL;
-      preloader.hide();
+      if (this.renderState.app.ready) {
+        preloader.hide();
+      }
     }
     
     this.render();
@@ -148,6 +159,14 @@ class View{
 
   render(): void {
     this.renderState.app = copyObject(state);
+
+    if (this.renderState.app.ready && this.isStartScreen) {
+      this.startScreen.style.opacity = '0';
+      setTimeout(()=> {
+        this.startScreen.remove();
+        preloader.hide();
+      }, 400);
+    }
 
     if (this.renderState.app.language !== this.oldState.app.language) {
       const t = createTranslator(this.renderState.app.language);
@@ -162,7 +181,6 @@ class View{
 
     if (this.renderState.background !== this.oldState.background) {
         this.oldState.background.classList.remove('visible');
-        console.log(this.renderState.background);
         
         document.body.prepend(this.renderState.background);
         this.renderState.background.classList.add('visible');
@@ -207,13 +225,16 @@ class View{
     }
 
     if (this.renderState.app.lat !== this.oldState.app.lat) {
-      replaceInnerHTML(this.latitudeNode, formatGeo(this.renderState.app.lat));
-      replaceInnerHTML(this.longitudeNode, formatGeo(this.renderState.app.lon));
+      replaceInnerHTML(this.latitudeNode, formatGeo(this.renderState.app.latStr));
+      replaceInnerHTML(this.longitudeNode, formatGeo(this.renderState.app.lonStr));
     }
 
     if (this.renderState.app.condition.icon !== this.oldState.app.condition.icon) {
       replaceInnerHTML(this.conditionNowNode, this.renderState.app.condition.text);
-      this.iconNowNode.src = getIconPath(this.renderState.app.period, this.renderState.app.condition.icon);
+      this.iconNowNode.src = getIconPath(
+        this.renderState.app.season,
+        (new Date(this.renderState.app.now)).getUTCHours(),
+        this.renderState.app.condition.icon);
     }
 
     if (this.renderState.app.temperatureNow !== this.oldState.app.temperatureNow) {
@@ -234,6 +255,13 @@ class View{
 
     if (this.renderState.app.language !== this.oldState.app.language) {
       this.mapLayer.setUrl(`https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}@2x.png?lang=${this.renderState.app.language}`);
+    }
+
+    if (this.renderState.app.now !== this.oldState.app.now) {
+      replaceInnerHTML(
+        this.dateNode, 
+        formatNowUTC(this.renderState.app.now, this.renderState.app.language),
+      );
     }
 
     this.oldState.app = copyObject(this.renderState.app);

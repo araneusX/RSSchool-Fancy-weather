@@ -1,35 +1,38 @@
-import handleError from './error';
-import { ipgeolocation, opencagedataByCoord, opencagedataByName, flickrByTags } from './apiResponses';
+import {
+  ipgeolocation, opencagedataByCoord,
+  opencagedataByName, flickrByTags
+} from './apiResponses';
 import { IPGEOLOCATION_KEY, OPENCAGEDATA_KEY, FLICKR_KEY } from './keys';
 import { status, UserLocation } from './types';
 import { extractCity, shuffleArr } from './utils';
-
-export async function loadImage(url: string): Promise<string> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  const base64Image = URL.createObjectURL(blob);
-  return base64Image;
-}
 
 export const imagesLinks = {
   index: 0,
   isList: false,
   store: [] as String[],
+  cash: {
+    season: '',
+    time: '',
+  },
 
-  async generate (season: string, time: string): Promise<void> {
-    this.index = 0;
-    let data = await fetch(flickrByTags(FLICKR_KEY, season, time));
-    if (data.ok) {
-      let output = await data.json();
-      let photos = output.photos.photo.filter((photo) => photo.url_h);
-      if (photos.length > 0) {
-        this.store = shuffleArr(photos.map((photo) => photo.url_h));
+  async generate(season: string, time: string): Promise<void> {
+    if (!(this.cash.season === season && this.cash.time === time)) {
+      this.cash = { season, time },
+      console.log(`Show images by request: ${season}, ${time}`);
+      this.index = 0;
+      let data = await fetch(flickrByTags(FLICKR_KEY, season, time));
+      if (data.ok) {
+        let output = await data.json();
+        let photos = output.photos.photo.filter((photo) => photo.url_h);
+        if (photos.length > 0) {
+          this.store = shuffleArr(photos.map((photo) => photo.url_h));
+        }
       }
+      if (this.store.length === 0) {
+        this.store[0] = `/src/img/${season}/${time}.jpg`;
+      }
+      this.isList = true;
     }
-    if (this.store.length === 0) {
-      this.store[0] = `/src/img/${season}/${time}.jpg`;
-    }
-    this.isList = true;
   },
 
   getLink(): { status: status, value: string } {
@@ -40,7 +43,6 @@ export const imagesLinks = {
       status: 'error' as status,
       value: this.store[0],
     }
-    console.log(this.store);
     
     if (this.store.length > 1) {
       result = {
@@ -82,6 +84,11 @@ export async function getCityListByName(name: string, lang: string):
             city: extractCity(i),
             lon: i.geometry.lng,
             lat: i.geometry.lat,
+            DMS: {
+              lon: i.annotations.DMS.lng,
+              lat: i.annotations.DMS.lat,
+            },
+            timeOffsetSec: i.annotations.timezone.offset_sec,
             lang
           }
         ));
@@ -106,13 +113,14 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
     } else {
       data = await fetch(opencagedataByCoord(OPENCAGEDATA_KEY, lat, lon));
     }
-
+    
     if (!data.ok) {
       throw new Error();
     }
 
     const locationObj = await data.json();
-
+    console.log(locationObj);
+    
     if (locationObj.status.code === 200) {
       result.status = 'ok';
       const place = locationObj.results[0].components;
@@ -121,16 +129,22 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
       } else {
         result.city = {
           name: place.hamlet || place.town || place.village 
-             || place.suburb || place.locality|| place.city,
+             || place.locality|| place.city,
           formatted: place.state 
           ? `${place.state}, ${place.country}`
           : `${place.country}`,
         }
       }
+      console.log(locationObj);
+      
+      result.DMS = {
+        lon: locationObj.results[0].annotations.DMS.lng,
+        lat: locationObj.results[0].annotations.DMS.lat,
+      },
+      result.timeOffsetSec = locationObj.results[0].annotations.timezone.offset_sec,
       result.lang = lang;
       result.lat = lat;
       result.lon = lon;
-      console.log(locationObj);
     }
   } catch (error) {
     console.error(error);

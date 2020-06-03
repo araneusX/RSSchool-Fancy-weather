@@ -20,11 +20,11 @@ export class RequestLocationConfirm extends Message {
 
   }
 
-  async askConfirm (location: UserLocation): Promise<boolean> {
+  async askConfirm (name: string, formatted: string): Promise<boolean> {
     const t =createTranslator(state.language);
     this.title.append(`${t('MESSAGE_CONFIRM_LOCATION')}:`);
-    this.city.append(location.city.name);
-    this.describe.append(location.city.formatted)
+    this.city.append(name);
+    this.describe.append(formatted)
     this.noBtn.append(t('CHANGE'));
     this.yesBtn.append(t('CONFIRM'));
 

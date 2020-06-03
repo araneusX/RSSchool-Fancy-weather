@@ -1,11 +1,12 @@
 import { copyObject } from './utils';
 export interface State{
+  ready: boolean;
   backgroundURL: string,
   language: string,
   unit: 'c' | 'f',
   voice: boolean,
   command: boolean,
-  now: Date,
+  now: number,
   error: string,
   city: {
     name: string,
@@ -13,6 +14,9 @@ export interface State{
   },
   lat: number,
   lon: number,
+  latStr: string,
+  lonStr: string,
+  timeOffsetSec: number,
   temperatureNow: number,
   condition: {
     icon: number,
@@ -21,7 +25,8 @@ export interface State{
   feels: number,
   wind: number,
   humidity: number,
-  period: 0|1,
+  period: string,
+  season: string,
   nextDays: {
     temperature: number,
     icon: number,
@@ -37,6 +42,9 @@ type actionLocation = {
       name: string,
       formatted: string;
     },
+    latStr: string;
+    lonStr: string;
+    timeOffsetSec: number;
   }
 }
 
@@ -62,12 +70,21 @@ type actionUnit = {
 
 type actionNow = {
   type: 'SET_NOW',
-  value: Date,
+  value: {
+    now: number,
+    period: string,
+    season: string,
+  },
 }
 
 type actionError = {
   type: 'SET_ERROR',
   value: string,
+}
+
+type actionReady = {
+  type: 'SET_READY',
+  value: boolean,
 }
 
 type actionBackground = {
@@ -95,64 +112,78 @@ type actionWeather = {
 }
 
 const state: State = {
-  backgroundURL: 'https://images.unsplash.com/photo-1542202858-f881811262f7?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=1080&fit=max&ixid=eyJhcHBfaWQiOjEwMTM5NX0',
-  language: 'be',
+  ready: false,
+  backgroundURL: '',
+  language: 'en',
   unit: 'c',
   voice: false,
-  command: true,
+  command: false,
   error: '',
   city: {
-    name: 'Minsk',
-    formatted: 'Belarus, Best City!'
+    name: '',
+    formatted: ''
   },
-  lat: 53.902334,
-  lon: 27.5618791,
+  lat: 0,
+  lon: 0,
+  latStr: '',
+  lonStr: '',
+  timeOffsetSec: 0,
   condition: {
-    icon: 1240,
-    text: 'Light rain shower',
+    icon: 0,
+    text: '',
   },
-  temperatureNow: 10,
-  feels: 9,
-  wind: 12,
-  humidity: 89,
-  now: new Date(),
-  period: 1,
+  temperatureNow: 0,
+  feels: 0,
+  wind: 0,
+  humidity: 0,
+  now: 0,
+  season: '',
+  period: '',
   nextDays: [
     {
-      temperature: 45,
-      icon: 1003,
+      temperature: 0,
+      icon: 0,
     },
     {
-      temperature: 32,
-      icon: 1006,
+      temperature: 0,
+      icon: 0,
     },
     {
-      temperature: -9,
-      icon: 1009,
+      temperature: 0,
+      icon: 0,
     },
   ]
 };
 
 type myAction = actionLocation | actionLanguage | actionCommand | actionBackground
-| actionVoice | actionUnit | actionNow | actionWeather | actionError;
+| actionVoice | actionUnit | actionNow | actionWeather | actionError | actionReady;
 
 const stateBackup: State[] = [];
 let stateIndex: number = -1;
 
-export function setState(action: myAction):void {
-  stateBackup.push(copyObject(state));
-  stateIndex += 1;
+function saveState(): void {
   
-  if (stateBackup.length > 10) {
-    stateBackup.shift();
-    stateIndex -+ 1;
+}
+
+export function setState(action: myAction):void {
+  if (action.type !== 'SET_NOW' && action.type !== 'SET_ERROR') {
+    stateBackup.push(copyObject(state));
+    stateIndex += 1;
+    if (stateBackup.length > 10) {
+      stateBackup.shift();
+      stateIndex -+ 1;
+    }
   }
+  
   switch (action.type) {
     case 'SET_LOCATION': {
       const { value } = action;
       state.lon = value.lon;
       state.lat = value.lat;
       state.city = copyObject(value.city);
+      state.lonStr = value.lonStr;
+      state.latStr = value.latStr;
+      state.timeOffsetSec = value.timeOffsetSec;
       break;
     };
     case 'SET_COMMAND': {
@@ -166,6 +197,9 @@ export function setState(action: myAction):void {
     };
     case 'SET_NOW': {
       const { value } = action;
+      state.now = value.now;
+      state.period = value.period;
+      state.season = value.season;
       break;
     };
     case 'SET_UNIT': {
@@ -181,12 +215,16 @@ export function setState(action: myAction):void {
       state.error = value;
       break;
     };
+    case 'SET_READY': {
+      const { value } = action;
+      state.ready = value;
+      break;
+    };
     case 'SET_BACKGROUND': {
       const { value } = action;
       state.backgroundURL = value;
     }
   }
-  console.log(state);
   
 }
 
