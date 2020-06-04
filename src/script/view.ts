@@ -85,6 +85,15 @@ class View{
     })
     this.mapLayer.addTo(this.map);
 
+    if (this.renderState.app.lat !== 0) {
+      const weatherIcon = L.icon({
+        iconUrl: getIconPath(this.renderState.app.isDay, this.renderState.app.condition),
+        iconSize:     [64, 64],
+        iconAnchor:   [32, 32],
+      });
+      L.marker([this.renderState.app.lat, this.renderState.app.lon], {icon: weatherIcon}).addTo(this.map);
+    }
+
     this.unitBtn.dataset.unit = this.renderState.app.unit;
     this.languageNode.value = this.renderState.app.language;
 

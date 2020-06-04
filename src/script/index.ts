@@ -4,13 +4,11 @@ import '../leaflet/leaflet.css';
 import View from './view';
 import {
   setStartData, initUserSearch, initLanguageSelect,
-  initBackgroundRefresh, initClock, askUserHisLocation, setWeather, initUnitChange,
+  initBackgroundRefresh, initClock, askUserHisLocation, setWeather, initUnitChange, initSpeakWeather,
 } from './generators';
 import { status } from './types';
 import state, { setState } from './state';
 import { RequestLocationConfirm } from '../components/confirmLocation/requestLocationConfirm';
-import createTranslator from './int';
-import { showNotification } from '../components/notification/showNotification';
 
 window.addEventListener('load', async () => {
   setState({type: 'SET_READY', value: false});
@@ -41,8 +39,8 @@ window.addEventListener('load', async () => {
   initBackgroundRefresh(() => view.synchronize());
   initClock(() => view.render());
   initUnitChange(() => view.render());
+  initSpeakWeather();
 
-  (document.getElementById('js-voiceBtn')).addEventListener('click', () => showNotification((createTranslator(state.language))('NOT IMPLEMENTED')));
   (document.getElementById('js-commandBtn')).addEventListener('click', () => showNotification((createTranslator(state.language))('NOT IMPLEMENTED')));
 });
 

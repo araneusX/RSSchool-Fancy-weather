@@ -248,5 +248,54 @@ export function getTimes(timeOffsetSec: number, latitude: number):
 }
 
 export function convertKmPHoursToMPSec(value: number): number {
-  return ((value*60)/1000);
+  return (value / 3.176);
+}
+
+export function createPhrases(
+  lang: string,
+  place: string,
+  currCondition: number,
+  currTemp: number,
+  wind: number,
+  humidity: number,
+  tempMin: number,
+  tempMax: number,
+  baseCondition: number,
+  isDay: number
+  ): string[] {
+  const t =createTranslator(lang);
+  let result: string[] = [];
+
+  switch (lang) {
+    case 'ru': result = [
+      `Выбранное местоположение: ${place
+      }. В настоящее время: ${t(`${currCondition}${isDay ? 'day' : 'night'}`)
+      }, температура воздуха ${Math.round(currTemp)
+      } градусов ${Math.round(currTemp) === 0 ? '' : `${currTemp > 0 ? 'выше' : 'ниже'} ноля`
+      }; скорость ветра около ${Math.round(convertKmPHoursToMPSec(wind))
+      } метров в секунду; влажность воздуха ${humidity} процентов.`,
+
+      `На протяжении текущих суток ожидается от ${Math.round(tempMin)
+      } градусов ${Math.round(currTemp) === 0 ? '' : `${currTemp > 0 ? 'выше' : 'ниже'} ноля`
+      } до ${Math.round(tempMax)
+      } градусов ${Math.round(currTemp) === 0 ? '' : `${currTemp > 0 ? 'выше' : 'ниже'} ноля`
+      }, ${t(`${baseCondition}night`)}.`,
+    ];
+    break;
+    default: result = [
+      `Selected location is: ${place
+      }. Currently: is ${t(`${currCondition}${isDay ? 'day' : 'night'}`)}, temperature is ${Math.round(currTemp)
+      } degrees ${Math.round(currTemp) === 0 ? '' : `${currTemp > 0 ? 'above' : 'below'} zero`
+      }; wind speed is round ${Math.round(convertKmPHoursToMPSec(wind))
+      } meters per second; Humidity is ${humidity} percent.`,
+
+      `The forecast shows ${t(`${baseCondition}night`)
+      }; and from ${Math.round(tempMin)
+      } degrees ${Math.round(currTemp) === 0 ? '' : `${currTemp > 0 ? 'above' : 'below'} zero`
+      }  zero to ${Math.round(tempMax)
+      } degrees ${Math.round(currTemp) === 0 ? '' : `${currTemp > 0 ? 'above' : 'below'} zero`
+      } degrees during the current day.`
+    ];
+  }
+  return result;
 }

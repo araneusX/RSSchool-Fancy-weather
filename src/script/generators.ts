@@ -5,7 +5,9 @@ import { RequestLocation } from '../components/confirmLocation/reqestLocation';
 import { getUserSearch } from '../components/addUserSearch/addUserSearch';
 import { status, UserLocation, State } from './types';
 import preloader from '../components/preloader/preloader';
-import { getTimes } from './utils';
+import { getTimes, createPhrases } from './utils';
+import createTranslator from './int';
+import { showNotification } from '../components/notification/showNotification';
 
 type startStatus = 'ok' | 'error' | 'auto';
 export async function setStartData(onResultCallback?: (status: startStatus) => any): Promise<startStatus> {
@@ -244,4 +246,58 @@ export async function setWeather(onResultCallback?: (status: status) => any): Pr
     onResultCallback(weather.status);
   }
   return weather.status;
+}
+
+export function initSpeakWeather(): void {
+  const synth = window.speechSynthesis;
+  synth.addEventListener('voiceschanged', () => {
+    (document.getElementById('js-voiceBtn')).addEventListener('click', () => {
+      synth.cancel();
+      let lang: string = state.language;
+      const t = createTranslator(lang);
+      const voices = synth.getVoices();
+      if (voices.filter((voice) => voice.lang.slice(0, 2) === lang).length < 1) {
+        let notification = `${t('NO VOICE')}: `
+        switch (lang) {
+          case 'be':
+            if (voices.filter((voice) => voice.lang.slice(0, 2) === 'ru').length > 0) {
+              notification += 'руская';
+              lang = 'ru';
+            } else {
+              notification += 'English';
+              lang  ='en';
+            }
+            break;
+          default:
+            notification += 'English';
+            lang  ='en';
+        };
+          showNotification(notification);
+      };
+      const baseVoice = voices.filter((voice) => voice.lang.slice(0, 2) === lang)[0];
+
+      const phrases = createPhrases(
+        lang,
+        state.city.name,
+        state.condition,
+        state.unit === 'c' ? state.temperatureNow.c : state.temperatureNow.f,
+        state.wind,
+        state.humidity,
+        state.unit === 'c'
+        ? state.nextDays[0].temperature.min.c
+        : state.nextDays[0].temperature.min.f,
+        state.unit === 'c'
+        ? state.nextDays[0].temperature.max.c
+        : state.nextDays[0].temperature.max.f,
+        state.nextDays[0].condition,
+        state.isDay
+      );
+
+      phrases.forEach((phrase) => {
+        const utterance = new SpeechSynthesisUtterance(phrase);
+        utterance.voice = baseVoice;
+        synth.speak(utterance)
+      })
+    });
+  });
 }
