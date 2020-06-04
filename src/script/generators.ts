@@ -3,36 +3,68 @@ import state, { setState } from './state';
 import handleError from './error';
 import { RequestLocation } from '../components/confirmLocation/reqestLocation';
 import { getUserSearch } from '../components/addUserSearch/addUserSearch';
-import { status, UserLocation } from './types';
+import { status, UserLocation, State } from './types';
 import preloader from '../components/preloader/preloader';
 import { getTimes } from './utils';
 
-export async function setStartLocation(onResultCallback?: (status: status) => any): Promise<status> {
-  const location = await getLocation();
-  if (location.status === 'ok') {
-    const {lon, lat, city, timeOffsetSec, DMS} = location;
-    setState({
-      type: 'SET_LOCATION',
-      value: {
-        lon, lat, city, timeOffsetSec,
-        latStr: DMS.lat,
-        lonStr: DMS.lon,
-      }
-    });
+type startStatus = 'ok' | 'error' | 'auto';
+export async function setStartData(onResultCallback?: (status: startStatus) => any): Promise<startStatus> {
+  let savedState: State;
+  let autoDetectedLocation: string;
+  let myStatus: startStatus;
+  if (localStorage) {
+    if (localStorage.weatherState) {
+      savedState = JSON.parse(localStorage.weatherState);
+    }
 
-    const time = getTimes(timeOffsetSec, lat);
+    if (localStorage.autoDetectedLocation) {
+      autoDetectedLocation = localStorage.autoDetectedLocation;
+    }
+  }
 
-    setState({type: 'SET_NOW', value: time});
-    setState({type: 'SET_LANGUAGE', value: location.lang});
-    await setStateBackground(time.season, time.period);
-    await setWeather();
+  const location = await getLocation(savedState ? savedState.language : false);
+  if (savedState || location.status === 'ok') {
+    if (savedState
+      && (!(location.status === 'ok') || location.city.name === autoDetectedLocation)) {
+      const {lon, lat, city, timeOffsetSec, latStr, lonStr} = savedState;
+      setState({
+        type: 'SET_LOCATION',
+        value: { lon, lat, city, timeOffsetSec, latStr, lonStr }
+      });
+      const time = getTimes(timeOffsetSec, lat);
+      setState({type: 'SET_NOW', value: time});
+      setState({type: 'SET_LANGUAGE', value: savedState.language});
+      await setStateBackground(time.season, time.period);
+      await setWeather();
+      myStatus = 'auto';
+    } else {
+      const {lon, lat, city, timeOffsetSec, DMS} = location;
+      setState({
+        type: 'SET_LOCATION',
+        value: {
+          lon, lat, city, timeOffsetSec,
+          latStr: DMS.lat,
+          lonStr: DMS.lon,
+        }
+      });
+      const time = getTimes(timeOffsetSec, lat);
+      setState({type: 'SET_NOW', value: time});
+      setState({type: 'SET_LANGUAGE', value: location.lang});
+      await setStateBackground(time.season, time.period);
+      await setWeather();
+      myStatus = 'ok';
+    }
   } else {
     setState({type: 'SET_ERROR', value: handleError('NO_LOCATION')});
-  }
+    status = 'error';
+  };
   if (onResultCallback) {
-    onResultCallback(location.status)
+    onResultCallback(myStatus)
+  };
+  if (localStorage) {
+    localStorage.setItem('autoDetectedLocation', location.city.name);
   }
-  return location.status;
+  return myStatus;
 }
 
 export async function askUserHisLocation(onResultCallback?: (status: status) => any): Promise<status> {
@@ -70,6 +102,7 @@ export async function askUserHisLocation(onResultCallback?: (status: status) => 
 export function initUserSearch(onResultCallback?: (status: status) => any): void {
   const searchInp = document.getElementById('js-searchInp') as HTMLInputElement;
   const searchForm = document.getElementById('js-searchForm') as HTMLFormElement;
+  let isCancel = false;
   const searchSubmit = () => new Promise(resolve => {
     function removeListeners(): void {
       searchForm.removeEventListener('submit', onSubmit)
@@ -85,7 +118,8 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
     function onCancel(e:Event): void {
       const target = e.target as HTMLElement;
       if (!target.closest('#js-searchForm')) {
-        removeListeners()
+        removeListeners();
+        isCancel = true;
         resolve('cancel');
       }
     }
@@ -111,7 +145,9 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
       await setStateBackground(time.season, time.period);
       await setWeather();
     } else {
-      setState({type: 'SET_ERROR', value: handleError('NO_SEARCH')});
+      if (!isCancel) {
+        setState({type: 'SET_ERROR', value: handleError('NO_SEARCH')});
+      }
     }
     if (onResultCallback) {
       onResultCallback(newPlace.status)

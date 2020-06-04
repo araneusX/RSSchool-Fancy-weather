@@ -3,6 +3,8 @@ import { UserLocation } from "../../script/types";
 import { getCityListByName } from "../../script/getData";
 import state from '../../script/state';
 import { clearInnerHTML } from '../../script/utils';
+import { showNotification } from '../notification/showNotification';
+import createTranslator from '../../script/int';
 
 export async function getUserSearch(
   formElement: HTMLFormElement,
@@ -17,6 +19,8 @@ export async function getUserSearch(
   list.classList.add('user-search_list');
   container.append(wrapper);
   wrapper.append(list);
+
+  const t =createTranslator(state.language);
 
   let result = new UserLocation();
   let locationsList: UserLocation[] = [];
@@ -56,7 +60,6 @@ export async function getUserSearch(
               clearInnerHTML(list);
               itemNodeList = [];
               currentItem = 0;
-
               locationsList = resultList.list;
               locationsList.forEach((item, i) => {
                 const option = document.createElement('li');
@@ -81,6 +84,8 @@ export async function getUserSearch(
               result = resultList.list[0];
               formElement.dispatchEvent(new Event('submit'));
             }
+          } else {
+            showNotification(t('NO_SEARCH'));
           }
           isReqest = false;
         }

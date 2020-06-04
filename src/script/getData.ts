@@ -101,7 +101,6 @@ export async function getCityListByName(name: string, lang: string):
           result.status = 'error';
         }
     } catch (error) {
-      console.error(error);
       result.status = 'error';
     }
     return result;
@@ -124,7 +123,6 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
     }
 
     const locationObj = await data.json();
-    console.log(locationObj);
 
     if (locationObj.status.code === 200) {
       result.status = 'ok';
@@ -140,7 +138,6 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
           : `${place.country}`,
         }
       }
-      console.log(locationObj);
 
       result.DMS = {
         lon: locationObj.results[0].annotations.DMS.lng,
@@ -152,10 +149,8 @@ export async function getCityByCoord(lat: number, lon: number, lang?: string):
       result.lon = lon;
     }
   } catch (error) {
-    console.error(error);
     result.status = 'error';
   }
-
 
   return result;
 }
@@ -180,7 +175,6 @@ export async function detectLocationByIp(): Promise<UserLocation> {
     }
     result.status = 'ok';
   } catch (error) {
-    console.error(error);
     result.status = 'error';
   }
 
@@ -207,25 +201,19 @@ export async function  detectLocationByGeolocation(): Promise<UserLocation> {
   return result;
 }
 
-export async function getLocation(): Promise<UserLocation> {
+export async function getLocation(language?: string | false): Promise<UserLocation> {
   let result = await detectLocationByGeolocation();
-  result.lang = navigator.language || 'en';
+  result.lang = language || navigator.language || 'en';
 
   if (result.status === 'error') {
     result = await detectLocationByIp();
-    result.lang = navigator.language || result.lang;
+    result.lang = language || navigator.language || result.lang;
+  }
 
-    if (result.lang === 'ru') {
-      const userCity = await (getCityByCoord(result.lat, result.lon, 'ru'));
-      if (userCity.status === 'ok') {
-        result = userCity;
-      }
-    }
-  } else {
-    const userCity = await getCityByCoord(result.lat, result.lon, result.lang);
-    if (userCity.status === 'ok') {
+  const userCity = await getCityByCoord(result.lat, result.lon, result.lang);
+
+  if (userCity.status === 'ok') {
       result = userCity;
-    }
   }
 
   return result;
@@ -245,7 +233,6 @@ export async function getWeather(lat: number, lon: number): Promise<{
       throw new Error();
     };
     forecastObj = await forecastData.json();
-    console.log(forecastObj);
 
     resultStatus = 'ok';
     resultValue = {
@@ -277,7 +264,6 @@ export async function getWeather(lat: number, lon: number): Promise<{
         })),
     };
   } catch (error) {
-    console.error(error);
     resultStatus = 'error';
   }
   return {

@@ -2,7 +2,7 @@ import { copyObject } from './utils';
 import { State, actionLocation, actionLanguage, actionCommand, actionBackground, actionVoice, actionUnit, actionNow, actionWeather, actionError, actionReady } from './types';
 
 
-const state: State = {
+let state: State = {
   ready: false,
   backgroundURL: '',
   language: 'en',
@@ -76,6 +76,10 @@ const state: State = {
     },
   ]
 };
+
+if (localStorage && localStorage.weatherState) {
+  state = JSON.parse(localStorage.weatherState);
+}
 
 type myAction = actionLocation | actionLanguage | actionCommand | actionBackground
 | actionVoice | actionUnit | actionNow | actionWeather | actionError | actionReady;
@@ -153,6 +157,9 @@ export function setState(action: myAction):void {
     }
   }
 
+  if (localStorage && action.type !== 'SET_NOW' && action.type !== 'SET_READY') {
+    localStorage.setItem('weatherState', JSON.stringify(state));
+  }
 }
 
 export default state;
