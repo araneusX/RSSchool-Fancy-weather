@@ -214,7 +214,9 @@ export async function getLocation(language?: string | false): Promise<UserLocati
 
   if (userCity.status === 'ok') {
       result = userCity;
-  }
+  };
+
+  result.lang = result.lang.slice(0, 2);
 
   return result;
 }

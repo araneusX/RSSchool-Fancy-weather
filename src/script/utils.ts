@@ -114,7 +114,7 @@ export function extractCity(apiObj: any) : {name:string, formatted: string} {
   const fields = apiObj.components;
 
   if (fields.hamlet || fields.town || fields.village || fields.suburb || fields.locality) {
-    name = fields.hamlet || fields.town || fields.village || fields.suburb || fields.locality;
+    name = fields.hamlet || fields.town || fields.village || fields.locality || '';
   }
 
   if (name.length > 1) {

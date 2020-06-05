@@ -50,38 +50,46 @@ export default class SpeechModule {
       onResultCallback(resultsArr);
     } catch (e) {
       this.recognition.stop();
-    }
+    };
   }
 
   setResultAction(callback) {
-    if (this.onResultAction) {
-      this.recognition.removeEventListener('result', this.onResultAction);
-    }
-    this.onResultAction = (e: SpeechRecognitionEvent) => {
-      this.onResult(e, callback);
-    }
-    this.recognition.addEventListener('result', this.onResultAction);
+    if ('webkitSpeechRecognition' in window) {
+      if (this.onResultAction) {
+        this.recognition.removeEventListener('result', this.onResultAction);
+      }
+      this.onResultAction = (e: SpeechRecognitionEvent) => {
+        this.onResult(e, callback);
+      }
+      this.recognition.addEventListener('result', this.onResultAction);
+    };
   }
 
   setLanguage(language: 'en' | 'ru') {
-    this.recognition.abort();
-    this.lang = this.language[language];
-    this.recognition.lang =  this.lang;
+    if ('webkitSpeechRecognition' in window) {
+      this.recognition.abort();
+      this.lang = this.language[language];
+      this.recognition.lang =  this.lang;
+    };
   }
 
   stop() {
-    if (this.isStart) {
-      this.isStart = false;
-      this.recognition.abort();
-      this.recognition.removeEventListener('result', this.onResultAction);
+    if ('webkitSpeechRecognition' in window) {
+      if (this.isStart) {
+        this.isStart = false;
+        this.recognition.abort();
+        this.recognition.removeEventListener('result', this.onResultAction);
+      };
     };
   }
 
   start() {
-    if (!this.isStart) {
-      this.isStart = true;
-      this.recognition.start();
-      this.recognition.addEventListener('result', this.onResultAction);
+    if ('webkitSpeechRecognition' in window) {
+      if (!this.isStart) {
+        this.isStart = true;
+        this.recognition.start();
+        this.recognition.addEventListener('result', this.onResultAction);
+      };
     };
   }
 }

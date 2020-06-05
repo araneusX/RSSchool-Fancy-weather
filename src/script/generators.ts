@@ -262,26 +262,28 @@ export async function setWeather(onResultCallback?: (status: status) => any): Pr
 
 export function initSpeakWeather(): void {
   const synth = window.speechSynthesis;
-  synth.addEventListener('voiceschanged', () => {
+  let voices = synth.getVoices();
+  function onReady(): void {
     (document.getElementById('js-voiceBtn')).addEventListener('click', () => {
       synth.cancel();
       let lang: string = state.language;
       const t = createTranslator(lang);
-      const voices = synth.getVoices();
       if (voices.filter((voice) => voice.lang.slice(0, 2) === lang).length < 1) {
-        let notification = `${t('NO VOICE')}: `
+        let notification = `${t('NO VOICE')} `
         switch (lang) {
           case 'be':
             if (voices.filter((voice) => voice.lang.slice(0, 2) === 'ru').length > 0) {
-              notification += 'руская';
+              notification = `${notification}${t('OTHER VOICE')}: руская`;
               lang = 'ru';
-            } else {
-              notification += 'English';
+            } else if (voices.filter((voice) => voice.lang.slice(0, 2) === 'en').length > 0){
+              notification = `${notification}${t('OTHER VOICE')}: English`;
               lang  ='en';
             }
             break;
           default:
-            notification += 'English';
+            if (voices.filter((voice) => voice.lang.slice(0, 2) === 'en').length > 0) {
+              notification = `${notification}${t('OTHER VOICE')}: English`;
+            }
             lang  ='en';
         };
           showNotification(notification);
@@ -309,10 +311,21 @@ export function initSpeakWeather(): void {
         const utterance = new SpeechSynthesisUtterance(phrase);
         utterance.voice = baseVoice;
         utterance.volume = state.volume;
+        utterance.pitch = 1;
+        utterance.rate = 1;
         synth.speak(utterance)
       })
     });
-  });
+  };
+
+  if (voices.length === 0) {
+    synth.addEventListener('voiceschanged', () => {
+      voices = synth.getVoices();
+      onReady();
+    }, { once: true });
+  } else {
+    onReady();
+  }
 }
 
 export function initSpeechCommand(onResultCallback?: () => any):void {

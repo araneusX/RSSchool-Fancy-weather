@@ -24,7 +24,7 @@ let state: State = {
   latStr: '',
   lonStr: '',
   timeOffsetSec: 0,
-  condition: 0,
+  condition: 1000,
   temperatureNow: {
     c: 0,
     f: 0,
@@ -50,7 +50,7 @@ let state: State = {
           f: 0
           }
       },
-      condition: 0,
+      condition: 1000,
     },
     {
       temperature: {
@@ -63,7 +63,7 @@ let state: State = {
           f: 0
           }
       },
-      condition: 0,
+      condition: 1000,
     },
     {
       temperature: {
@@ -76,7 +76,7 @@ let state: State = {
           f: 0
           }
       },
-      condition: 0,
+      condition: 1000,
     },
   ]
 };
@@ -84,6 +84,8 @@ let state: State = {
 if (localStorage && localStorage.weatherState) {
   state = JSON.parse(localStorage.weatherState);
 }
+
+state.language = state.language.slice(0, 2); // fix wrong data from localStorage // it will be deleted
 
 type myAction = actionLocation | actionLanguage | actionCommand | actionBackground
 | actionVoice | actionUnit | actionNow | actionWeather | actionError | actionReady
@@ -115,7 +117,7 @@ export function setState(action: myAction):void {
     };
     case 'SET_LANGUAGE': {
       const { value } = action;
-      state.language = value;
+      state.language = value.slice(0, 2);
       break;
     };
     case 'SET_NOW': {
