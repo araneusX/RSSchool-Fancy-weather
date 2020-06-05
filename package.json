@@ -1,9 +1,9 @@
 {
-  "name": "movie-search",
+  "name": "fancy-weather",
   "version": "1.0.0",
   "author": "araneusX <araneusx@gmail.com>",
   "private": true,
-  "homepage": "https://araneusx-movie-search.netlify.app/",
+  "homepage": "https://araneusx-fancy-weather.netlify.app/",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack --mode development",
     "start": "cross-env NODE_ENV=development webpack-dev-server --mode development --open",
@@ -44,7 +44,6 @@
     "@types/webspeechapi": "0.0.29",
     "copy-webpack-plugin": "^5.1.1",
     "normalize.css": "^8.0.1",
-    "swiper": "^5.3.8",
     "ts-loader": "^7.0.5",
     "tslint": "^6.1.2",
     "typescript": "^3.9.3"
