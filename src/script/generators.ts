@@ -8,6 +8,10 @@ import preloader from '../components/preloader/preloader';
 import { getTimes, createPhrases } from './utils';
 import createTranslator from './int';
 import { showNotification } from '../components/notification/showNotification';
+import { commands } from './voiceCommands';
+import SpeechModule from './speechModule';
+
+const speech = new SpeechModule(state.language === 'en'? 'en' : 'ru');
 
 type startStatus = 'ok' | 'error' | 'auto';
 export async function setStartData(onResultCallback?: (status: startStatus) => any): Promise<startStatus> {
@@ -109,6 +113,7 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
     function removeListeners(): void {
       searchForm.removeEventListener('submit', onSubmit)
       document.removeEventListener('click', onCancel);
+      searchForm.removeEventListener('cancel', onCancel);
     }
 
     function onSubmit(e:Event): void {
@@ -117,16 +122,22 @@ export function initUserSearch(onResultCallback?: (status: status) => any): void
       resolve('submit');
     }
 
+    function onUserCancel():void {
+      removeListeners();
+      isCancel = true;
+      resolve('cancel');
+    }
+
     function onCancel(e:Event): void {
       const target = e.target as HTMLElement;
       if (!target.closest('#js-searchForm')) {
-        removeListeners();
-        isCancel = true;
-        resolve('cancel');
+        onUserCancel();
       }
     }
+
     searchForm.addEventListener('submit', onSubmit);
     document.addEventListener('click', onCancel);
+    searchForm.addEventListener('commandCancel', onUserCancel);
   });
 
   async function searchOn(): Promise<void> {
@@ -180,6 +191,7 @@ export function initLanguageSelect(onResultCallback?: () => any): void {
     }
     preloader.hide();
     setState({type: 'SET_LANGUAGE', value: selectNode.value});
+    speech.setLanguage(state.language === 'en' ? 'en' : 'ru');
     if (onResultCallback) {
       onResultCallback();
     }
@@ -296,8 +308,110 @@ export function initSpeakWeather(): void {
       phrases.forEach((phrase) => {
         const utterance = new SpeechSynthesisUtterance(phrase);
         utterance.voice = baseVoice;
+        utterance.volume = state.volume;
         synth.speak(utterance)
       })
     });
+  });
+}
+
+export function initSpeechCommand(onResultCallback?: () => any):void {
+  const searchInput = document.getElementById('js-searchInp') as HTMLInputElement;
+  const searchForm = document.getElementById('js-searchForm') as HTMLFormElement;
+  const voiceBtn = document.getElementById('js-voiceBtn');
+
+  function handleSearchRequest(speechResults: string[]): void {
+    switch (speechResults[0]) {
+      case 'cancel':
+      case 'отменить':
+        searchForm.dispatchEvent(new Event('commandCancel'));
+      break;
+      default:
+        searchInput.value = speechResults[0];
+        searchInput.dispatchEvent(new Event('input'));
+      }
+    speech.setResultAction(recognizeCommands);
+  }
+
+  function recognizeCommands(speechResults: string[]):void {
+    const t = createTranslator(state.language);
+    const language:string = state.language === 'en' ? 'en' : 'ru';
+    let command: string;
+    commands[language].forEach(comm => {
+      if (speechResults.includes(comm)) {
+        command = comm;
+      }
+    });
+    switch (command) {
+      case 'search':
+      case 'поиск':
+      case 'пошук':
+        searchInput.focus();
+        speech.setResultAction(handleSearchRequest);
+      break;
+      case 'clear':
+      case 'очистить':
+        searchInput.value = '';
+        speech.setResultAction(handleSearchRequest);
+      break;
+      case 'submit':
+      case 'принять':
+        searchForm.dispatchEvent(new Event('submit'));
+      break;
+      case 'next':
+      case 'следующий':
+      case 'наступний':
+        const keyDownEwent = new Event('keydown') as any;
+        keyDownEwent.key = 'ArrowDown';
+        searchInput.dispatchEvent(keyDownEwent);
+      break;
+      case 'previous':
+      case 'предыдущий':
+      case 'попередний':
+      case 'батарейки':
+      case 'поколения':
+        const keyUpEwent = new Event('keydown') as any;
+        keyUpEwent.key = 'ArrowUp';
+        searchInput.dispatchEvent(keyUpEwent);
+      break;
+      case 'cancel':
+      case 'отменить':
+        searchForm.dispatchEvent(new Event('commandCancel'));
+      break;
+      case 'voice':
+      case 'озвучить':
+        voiceBtn.dispatchEvent(new Event('click'));
+      break;
+      case 'louder':
+      case 'громче':
+      case 'хороший':
+        setState({type: 'SET_VOLUME', value: 'louder'});
+        showNotification(`${t('VOLUME SET')}: ${state.volume.toFixed(1)}`);
+      break;
+      case 'quieter':
+      case 'тише':
+      case 'лишай':
+        setState({type: 'SET_VOLUME', value: 'quieter'});
+        showNotification(`${t('VOLUME SET')}: ${state.volume.toFixed(1)}`);
+      break;
+    }
+  }
+  speech.setResultAction(recognizeCommands);
+  if (state.command) {
+    speech.start();
+  };
+
+  (document.getElementById('js-commandBtn')).addEventListener('click', () => {
+    setState({type: 'SET_COMMAND', value: !state.command});
+    onResultCallback();
+    if (state.command) {
+      speech.start();
+    } else {
+      speech.stop();
+    }
+  });
+
+  searchInput.addEventListener('blur', () => {
+    speech.setResultAction(recognizeCommands);
   });
 }

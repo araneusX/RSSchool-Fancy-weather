@@ -170,6 +170,7 @@ export async function getUserSearch(
   thisExist = false;
   wrapper.classList.remove('open');
   input.blur();
+  input.dispatchEvent(new Event('blur'));
   setTimeout(() => wrapper.remove(), 500);
 
   return result;

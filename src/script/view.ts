@@ -97,10 +97,6 @@ class View{
     this.unitBtn.dataset.unit = this.renderState.app.unit;
     this.languageNode.value = this.renderState.app.language;
 
-    if (this.renderState.app.voice) {
-      this.voiceBtn.classList.add('active');
-    }
-
     if (this.renderState.app.command) {
       this.commandBtn.classList.add('active');
     }
@@ -197,22 +193,10 @@ class View{
       this.unitBtn.dataset.unit = this.renderState.app.unit;
     }
 
-    if (this.oldState.app.voice) {
-      if (!this.renderState.app.voice) {
-        this.voiceBtn.classList.add('active');
-      }
-    } else {
-      if (this.renderState.app.voice) {
-        this.voiceBtn.classList.remove('active');
-      }
-    }
-
-    if (this.oldState.app.command) {
-      if (!this.renderState.app.command) {
-        this.commandBtn.classList.add('active');
-      }
-    } else {
+    if (this.oldState.app.command !== this.renderState.app.command) {
       if (this.renderState.app.command) {
+        this.commandBtn.classList.add('active');
+      } else {
         this.commandBtn.classList.remove('active');
       }
     }

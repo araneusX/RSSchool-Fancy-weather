@@ -1,5 +1,9 @@
 import { copyObject } from './utils';
-import { State, actionLocation, actionLanguage, actionCommand, actionBackground, actionVoice, actionUnit, actionNow, actionWeather, actionError, actionReady } from './types';
+import {
+  State, actionLocation, actionLanguage, actionCommand,
+  actionBackground, actionVoice, actionUnit, actionNow,
+  actionWeather, actionError, actionReady, actionVolume,
+} from './types';
 
 
 let state: State = {
@@ -8,8 +12,8 @@ let state: State = {
   language: 'en',
   unit: 'c',
   now: 0,
-  voice: false,
-  command: false,
+  volume: 0.6,
+  command: true,
   error: '',
   city: {
     name: '',
@@ -82,7 +86,8 @@ if (localStorage && localStorage.weatherState) {
 }
 
 type myAction = actionLocation | actionLanguage | actionCommand | actionBackground
-| actionVoice | actionUnit | actionNow | actionWeather | actionError | actionReady;
+| actionVoice | actionUnit | actionNow | actionWeather | actionError | actionReady
+| actionVolume;
 
 const stateBackup: State[] = [];
 let stateIndex: number = -1;
@@ -106,10 +111,6 @@ export function setState(action: myAction):void {
       state.lonStr = value.lonStr;
       state.latStr = value.latStr;
       state.timeOffsetSec = value.timeOffsetSec;
-      break;
-    };
-    case 'SET_COMMAND': {
-      const { value } = action;
       break;
     };
     case 'SET_LANGUAGE': {
@@ -154,6 +155,26 @@ export function setState(action: myAction):void {
     case 'SET_BACKGROUND': {
       const { value } = action;
       state.backgroundURL = value;
+      break;
+    }
+    case 'SET_VOLUME': {
+      const { value } = action;
+      if (!state.volume) {
+        state.volume = 1;
+      }
+      if (value === 'louder' && state.volume < 1) {
+        state.volume += 0.1;
+        break;
+      }
+      if (value === 'quieter' && state.volume > 0.1) {
+        state.volume -= 0.1;
+      }
+      break;
+    }
+    case 'SET_COMMAND': {
+      const { value } = action;
+      state.command = value;
+      break;
     }
   }
 

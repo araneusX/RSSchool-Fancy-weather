@@ -4,7 +4,7 @@ import '../leaflet/leaflet.css';
 import View from './view';
 import {
   setStartData, initUserSearch, initLanguageSelect,
-  initBackgroundRefresh, initClock, askUserHisLocation, setWeather, initUnitChange, initSpeakWeather,
+  initBackgroundRefresh, initClock, askUserHisLocation, setWeather, initUnitChange, initSpeakWeather, initSpeechCommand,
 } from './generators';
 import { status } from './types';
 import state, { setState } from './state';
@@ -40,8 +40,7 @@ window.addEventListener('load', async () => {
   initClock(() => view.render());
   initUnitChange(() => view.render());
   initSpeakWeather();
-
-  (document.getElementById('js-commandBtn')).addEventListener('click', () => showNotification((createTranslator(state.language))('NOT IMPLEMENTED')));
+  initSpeechCommand(() => view.render());
 });
 
 

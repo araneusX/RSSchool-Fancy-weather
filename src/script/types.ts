@@ -3,7 +3,7 @@ export interface State {
   backgroundURL: string,
   language: string,
   unit: string,
-  voice: boolean,
+  volume: number,
   command: boolean,
   now: number,
   error: string,
@@ -107,6 +107,11 @@ export type actionBackground = {
 export type actionWeather = {
   type: 'SET_WEATHER',
   value: Weather,
+}
+
+export type actionVolume = {
+  type: 'SET_VOLUME',
+  value: 'louder' | 'quieter',
 }
 
 export type status = 'ok' | 'error';
