@@ -576,6 +576,49 @@ body {
 
 .messages {
   z-index: 999;
+
+  &_help {
+    &-btn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      height: 30px;
+      width: 30px;
+      border-radius: 50%;
+      background-color: rgba(255, 0, 0, 0.651);
+      border: 1px solid rgba(0, 0, 0, 0.548);
+      box-shadow: 0 0 3px 0 black;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    &-window {
+      height: 320px;
+      width: 200px;
+      position: fixed;
+      top: 50px;
+      left: 25px;
+      background-color: rgba(255, 255, 255, 0.877);
+      border-radius: 10px;
+      font-size: 13px;
+      padding: 25px;
+      opacity: 0;
+      transition: opacity 0.3s;
+
+      &>h5 {
+        margin: 5px;
+      }
+    }
+
+    &-btn:hover+&-window {
+      opacity: 1;
+    }
+  }
 }
 
 #myPath {

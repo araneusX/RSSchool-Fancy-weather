@@ -36,6 +36,7 @@ class View{
   searchInpNode = document.getElementById('js-searchInp') as HTMLInputElement;
   searchBtnNode = document.getElementById('js-searchBtn') as HTMLButtonElement;
   startScreen = document.getElementById('js-start-screen');
+  helpNode = document.getElementById('js-help');
 
   nextDays = ['Next1', 'Next2', 'Next3'].map((i) => (
     {
@@ -128,6 +129,7 @@ class View{
     this.longitudeTitleNode.innerText = `${t('LATITUDE')}`;
     this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`
     this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`
+    this.helpNode.innerHTML = t('HELP');
 
     this.nextDays.forEach((day, i) => {
       day.nameNode.innerText = getFutureDay(
@@ -248,6 +250,7 @@ class View{
       this.longitudeTitleNode.innerText = `${t('LATITUDE')}`;
       this.searchInpNode.placeholder = `${t('SEARCH PLACEHOLDER')}`;
       this.searchBtnNode.value = `${t('SEARCH SUBMIT')}`;
+      this.helpNode.innerHTML = t('HELP');
       this.conditionNowNode.innerText = t(
         `${this.renderState.app.condition}${this.renderState.app.isDay ? 'day' : 'night'}`
       );
