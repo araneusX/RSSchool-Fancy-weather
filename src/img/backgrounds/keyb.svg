@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml-stylesheet type="text/css" href="../css/style.css"?>
+
+<svg fill="#003d55" width="40px" viewBox="0 -121 512 512" xmlns="http://www.w3.org/2000/svg">
+<path fill="#a6c8ec" d="m0 0v270h512v-270zm482 240h-452v-210h452zm0 0"/>
+<path d="m361 180h30v30h-30zm0 0"/>
+<path d="m241 120h30v30h-30zm0 0"/>
+<path d="m301 120h30v30h-30zm0 0"/>
+<path d="m181 120h30v30h-30zm0 0"/>
+<path d="m121 180h30v30h-30zm0 0"/>
+<path d="m121 120h30v30h-30zm0 0"/>
+<path d="m61 120h30v30h-30zm0 0"/>
+<path d="m361 120h30v30h-30zm0 0"/>
+<path d="m421 120h30v30h-30zm0 0"/>
+<path d="m241 60h30v30h-30zm0 0"/>
+<path d="m301 60h30v30h-30zm0 0"/>
+<path d="m181 60h30v30h-30zm0 0"/>
+<path d="m121 60h30v30h-30zm0 0"/>
+<path d="m61 60h30v30h-30zm0 0"/>
+<path d="m361 60h30v30h-30zm0 0"/>
+<path d="m421 60h30v30h-30zm0 0"/>
+<path d="m181 180h150v30h-150zm0 0"/>
+</svg>
