@@ -30,10 +30,10 @@ export const imagesLinks = {
         }
         this.cash = { season, time };
         if (this.store.length === 0) {
-          this.store[0] = `/src/img/backgrounds/${season}/${time}.jpg`;
+          this.store[0] = `./src/img/backgrounds/${season}/${time}.jpg`;
         }
       } catch (e) {
-        this.store[0] = `/src/img/backgrounds/${season}/${time}.jpg`;
+        this.store[0] = `./src/img/backgrounds/${season}/${time}.jpg`;
       }
       this.index = 0;
       this.isList = true;
