@@ -625,9 +625,7 @@ body {
       font-size: 13px;
       padding: 25px;
       opacity: 0;
-      transition: opacity 0.3s;
       pointer-events: none;
-
 
       &>h5 {
         margin: 0;
@@ -635,6 +633,7 @@ body {
     }
 
     &-btn:hover+&-window {
+      transition: opacity 0.3s;
       opacity: 1;
     }
   }
