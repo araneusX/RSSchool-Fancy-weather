@@ -105,7 +105,7 @@ export function getIconPath(isDay: 0|1, condition: number) {
       break;
   };
 
-  return `/src/img/icons/${time}/${fileName}.svg`
+  return `./src/img/icons/${time}/${fileName}.svg`
 }
 
 export function extractCity(apiObj: any) : {name:string, formatted: string} {
